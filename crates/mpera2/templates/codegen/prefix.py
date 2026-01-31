@@ -1,6 +1,7 @@
 from tinygrad import Tensor, TinyJit
 from typing import *
 
+# @TinyJit
 def _mpera_rolling(t: Tensor, w: int):
     C, R = t.shape
     out = R - w + 1
@@ -15,3 +16,10 @@ def _mpera_rolling(t: Tensor, w: int):
     ret = pad.cat(valid, dim=1)
 
     return ret
+
+# @TinyJit
+def _mpera_orderby(t: Tensor, key: Tensor, ascending: bool=True) -> Tensor:
+    perm = key.argsort(dim=0, descending=not ascending) # (N,)
+    C, N = t.shape
+    idx = perm.reshape(1, N).expand(C, N)
+    return t.gather(1, idx)

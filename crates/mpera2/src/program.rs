@@ -88,6 +88,19 @@ impl Program {
         }
     }
 
+    pub fn order_by(&self, by: Program, ascending: bool) -> Program {
+        let opref = self.op_pool.write().unwrap().insert(Op::OrderBy {
+            what: self.root.unwrap(),
+            by: by.root.unwrap(),
+            ascending,
+        });
+
+        Self {
+            op_pool: self.op_pool.clone(),
+            root: Some(opref),
+        }
+    }
+
     pub fn alias(&self, name: &str) -> Program {
         let opref = self.op_pool.write().unwrap().insert(Op::Output {
             name: name.to_string(),

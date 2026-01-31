@@ -74,6 +74,19 @@ impl Codegen {
                 BinaryOp { kind, lhs, rhs } => Self::binaryop(ix, &kind, &lhs, &rhs),
                 Reduce { kind, on } => Self::reduce(ix, &kind, &on),
                 Rolling { on, n } => Self::rolling(ix, &on, *n),
+                OrderBy {
+                    what,
+                    by,
+                    ascending,
+                } => codegen_var_stmt_vanilla(
+                    ix,
+                    &format!(
+                        "_mpera_orderby(x{}, key=x{}, ascending={})",
+                        what.0,
+                        by.0,
+                        if *ascending { "True" } else { "False" }
+                    ),
+                ),
                 Column { dataframe, column } => codegen_var_stmt_vanilla(
                     ix,
                     format!("x{}[name2index[0]['{column}']].unsqueeze(0)", dataframe.0).as_str(),

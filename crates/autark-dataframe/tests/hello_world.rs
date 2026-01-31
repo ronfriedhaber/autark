@@ -65,11 +65,17 @@ fn t0() {
     mu.alias("mean");
     sigma.alias("stdev");
 
+    frame
+        .p
+        .dataframe(None)
+        .order_by(frame.p.dataframe(None).col("quality"), false)
+        .slice(0, 10)
+        .alias("df_ordered");
+
     frame.realize();
 
     let hash = hash_of_dir("tmp").expect("Error getting hash.");
     dbg!(&hash);
-
     // assert_eq!(
     //     hash,
     //     "a6563cc841bfdec159c15003531c8019e457f1f9f3d3a384ba0f9b83c15fdec2"
