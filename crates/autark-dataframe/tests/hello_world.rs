@@ -66,7 +66,7 @@ fn t0() {
     sigma.alias("stdev");
 
     frame
-        .p
+able        .p
         .dataframe(None)
         .order_by(frame.p.dataframe(None).col("quality"), false)
         .slice(0, 10)

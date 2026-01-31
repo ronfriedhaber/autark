@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "crates/mpera2",
+  "crates/mpera",
   "crates/autark-dataframe"
 , "crates/autark-tensor"]
 

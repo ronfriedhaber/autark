@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 thiserror = "=2.0.17"
-mpera  = { path = "../mpera2" }
+mpera  = { path = "../mpera" }
 autark_tensor = { path = "../autark-tensor" }
 
 serde = { version = "1.0", features = ["derive"] }
