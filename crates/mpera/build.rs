@@ -29,9 +29,9 @@ fn main() {
     //     panic!("uv pip install -e . failed");
     // }
 
-    let pwd = tinygrad_dir.to_str().expect("non-utf8 path");
+    // let pwd = tinygrad_dir.to_str().expect("non-utf8 patc");
 
-    println!("cargo:warning=tinygrad installed from {}", pwd);
-    println!("cargo:rustc-env=TINYGRAD_PWD={}", pwd);
-    println!("cargo:rerun-if-changed={}", pwd);
+    // println!("cargo:warning=tinygrad installed from {}", pwd);
+    // println!("cargo:rustc-env=TINYGRAD_PWD={}", pwd);
+    // println!("cargo:rerun-if-changed={}", pwd);
 }
