@@ -60,17 +60,17 @@ fn t0() {
         .rolling(6)
         .reduce(ReduceOpKind::Mean);
 
-    a.concat(&[b]).alias("frame");
+    a.concat(&[b]).alias("frame", None);
 
-    mu.alias("mean");
-    sigma.alias("stdev");
+    mu.alias("mean", None);
+    sigma.alias("stdev", None);
 
     frame
-able        .p
+        .p
         .dataframe(None)
         .order_by(frame.p.dataframe(None).col("quality"), false)
         .slice(0, 10)
-        .alias("df_ordered");
+        .alias("df_ordered", Some(0));
 
     frame.realize();
 

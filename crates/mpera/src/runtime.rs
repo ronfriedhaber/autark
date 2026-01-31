@@ -100,7 +100,7 @@ impl Runtime {
 
         let schemas: Vec<Arc<Schema>> = out
             .iter()
-            .map(|(_, out)| {
+            .map(|(k, out)| {
                 Arc::new(arrow::datatypes::Schema {
                     fields: Fields::from_iter(out.iter().enumerate().map(|(ix, x)| {
                         Field::new(format!("column{ix}"), x.data_type().clone(), true)

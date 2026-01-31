@@ -1,4 +1,9 @@
-use std::sync::{Arc, RwLock};
+use std::{
+    collections::HashMap,
+    sync::{Arc, RwLock},
+};
+
+use arrow::datatypes::Schema;
 
 use crate::{
     // element::Element,
@@ -8,6 +13,7 @@ use crate::{
 #[derive(Debug, Clone)]
 pub struct Program {
     pub(crate) op_pool: Arc<RwLock<OpPool>>,
+    pub(crate) schema_map: HashMap<String, Option<usize>>,
     root: Option<OpRef>,
 }
 
@@ -16,6 +22,7 @@ impl Program {
         let op_pool = Arc::new(RwLock::new(OpPool::new(1024)));
         Program {
             op_pool,
+            schema_map: HashMap::new(),
             root: None,
         }
     }
@@ -29,6 +36,8 @@ impl Program {
 
         Self {
             op_pool: self.op_pool.clone(),
+            schema_map: self.schema_map.clone(),
+
             root: Some(opref),
         }
     }
@@ -43,6 +52,7 @@ impl Program {
 
         Self {
             op_pool: self.op_pool.clone(),
+            schema_map: self.schema_map.clone(),
             root: Some(opref),
         }
     }
@@ -59,6 +69,7 @@ impl Program {
 
         Self {
             op_pool: self.op_pool.clone(),
+            schema_map: self.schema_map.clone(),
             root: Some(opref),
         }
     }
@@ -72,6 +83,7 @@ impl Program {
 
         Self {
             op_pool: self.op_pool.clone(),
+            schema_map: self.schema_map.clone(),
             root: Some(opref),
         }
     }
@@ -84,6 +96,7 @@ impl Program {
 
         Self {
             op_pool: self.op_pool.clone(),
+            schema_map: self.schema_map.clone(),
             root: Some(opref),
         }
     }
@@ -97,20 +110,24 @@ impl Program {
 
         Self {
             op_pool: self.op_pool.clone(),
+            schema_map: self.schema_map.clone(),
             root: Some(opref),
         }
     }
 
-    pub fn alias(&self, name: &str) -> Program {
+    pub fn alias(&self, name: &str, schema: Option<usize>) -> Program {
         let opref = self.op_pool.write().unwrap().insert(Op::Output {
             name: name.to_string(),
             value: self
                 .root
                 .expect("Can't designate empty Program as part of output."),
         });
+        let mut schema_map = self.schema_map.clone();
+        schema_map.insert(name.to_string(), schema);
 
         Self {
             op_pool: self.op_pool.clone(),
+            schema_map,
             root: Some(opref),
         }
     }
@@ -124,6 +141,7 @@ impl Program {
 
         Self {
             op_pool: self.op_pool.clone(),
+            schema_map: self.schema_map.clone(),
             root: Some(opref),
         }
     }
@@ -136,6 +154,7 @@ impl Program {
 
         Self {
             op_pool: self.op_pool.clone(),
+            schema_map: self.schema_map.clone(),
             root: Some(opref),
         }
     }
@@ -149,6 +168,7 @@ impl Program {
 
         Self {
             op_pool: self.op_pool.clone(),
+            schema_map: self.schema_map.clone(),
             root: Some(opref),
         }
     }
@@ -161,6 +181,7 @@ impl Program {
 
         Self {
             op_pool: self.op_pool.clone(),
+            schema_map: self.schema_map.clone(),
             root: Some(opref),
         }
     }
