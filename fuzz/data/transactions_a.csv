@@ -1,0 +1,10 @@
+transaction_id,user_id,timestamp,amount,currency,is_refund,merchant,country,items_count
+1000001,42,2025-01-03T09:14:22Z,19.99,USD,false,Amazon,US,2
+1000002,17,2025-01-03T09:18:41Z,5.50,USD,false,Starbucks,US,1
+1000003,42,2025-01-03T10:02:09Z,129.00,EUR,false,Decathlon,FR,3
+1000004,91,2025-01-03T10:11:54Z,7.25,USD,true,Uber,US,1
+1000005,17,2025-01-03T11:44:07Z,2499.99,USD,false,Apple,US,1
+1000006,58,2025-01-03T12:01:33Z,12.00,GBP,false,Pret A Manger,GB,2
+1000008,73,2025-01-03T13:22:59Z,3.80,EUR,false,Carrefour,FR,5
+1000009,91,2025-01-03T14:05:44Z,45.00,USD,false,Shell,US,1
+1000010,58,2025-01-03T15:36:12Z,89.90,EUR,false,Uniqlo,DE,4

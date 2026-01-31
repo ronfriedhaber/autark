@@ -1,0 +1,13 @@
+[package]
+name = "autarkpy"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "autarkpy"
+crate-type = ["cdylib"]
+
+
+[dependencies]
+pyo3 = { version = "=0.26", features = ["extension-module"] }
+autark = { path = "../autark-engine" }

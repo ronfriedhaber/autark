@@ -1,0 +1,7 @@
+[workspace]
+members = [
+  "crates/mpera2",
+  "crates/autark-dataframe"
+, "crates/autark-tensor"]
+
+resolver = "3"
