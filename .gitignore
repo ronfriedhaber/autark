@@ -38,8 +38,8 @@ Desktop.ini
 .env.*
 !.env.example
 
-tinygrad/
-.git2
-.git3
+# tinygrad/
+# .git2
+# .git3
 
 docs/
