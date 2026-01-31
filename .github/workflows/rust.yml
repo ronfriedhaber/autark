@@ -28,6 +28,7 @@ jobs:
 
       - name: Install tinygrad (editable)
         run: |
+          uv venv
           cd tinygrad
           uv pip install -e .
           cd ..
