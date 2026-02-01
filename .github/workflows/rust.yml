@@ -1,4 +1,4 @@
-name: Rust
+name: Overview
 
 on:
   push:
@@ -38,6 +38,16 @@ jobs:
 
       - name: Build
         run: cargo build --verbose
+
+
+      - name: Check
+        run: cargo check --verbose
+
+  
+      - name: Count LOC
+        run: |
+          sudo apt install -y cloc
+          cloc . --json --out=cloc.json
 
       # - name: Run tests
       #   run: cargo test --verbose
