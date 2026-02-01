@@ -1,0 +1,4 @@
+- name: LOC
+  run: |
+    sudo apt install -y cloc
+    cloc . --json --out=cloc.json
