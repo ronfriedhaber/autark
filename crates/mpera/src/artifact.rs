@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{pyfn::PyFn, with_tinygrad::with_tinygrad};
+use crate::{Result, error::Error, pyfn::PyFn, with_tinygrad::with_tinygrad};
 
 #[derive(Debug)]
 pub struct Artifact {
@@ -11,10 +11,11 @@ pub struct Artifact {
 }
 
 impl Artifact {
-    pub fn new(source: &str) -> Artifact {
-        Artifact {
+    pub fn new(source: &str) -> Result<Artifact> {
+        Ok(Artifact {
             source: source.to_string(),
-            object: with_tinygrad(|py| PyFn::new(py, source)).unwrap(),
-        }
+            object: with_tinygrad(|py| PyFn::new(py, source))
+                .map_err(|_| Error::ErrorInitializingProgram)?,
+        })
     }
 }

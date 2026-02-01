@@ -29,7 +29,11 @@ impl Program {
     }
 
     fn with_generic(&self, op: Op) -> Result<Program> {
-        let opref = self.op_pool.write().unwrap().insert(op);
+        let opref = self
+            .op_pool
+            .write()
+            .map_err(|_| Error::PoisonedLock)?
+            .insert(op);
 
         Ok(Self {
             op_pool: self.op_pool.clone(),
@@ -91,18 +95,13 @@ impl Program {
     }
 
     pub fn alias(&self, name: &str, schema: Option<usize>) -> Result<Program> {
-        let value = self.root()?;
-        let opref = self.op_pool.write().unwrap().insert(Op::Output {
-            name: name.to_string(),
-            value,
-        });
-        let mut schema_map = self.schema_map.clone();
-        schema_map.insert(name.to_string(), schema);
+        // let value = self.root()?;
+        // let mut schema_map = self.schema_map.clone();
+        // schema_map.insert(name.to_string(), schema);
 
-        Ok(Self {
-            op_pool: self.op_pool.clone(),
-            schema_map,
-            root: Some(opref),
+        self.with_generic(Op::Output {
+            name: name.to_string(),
+            value: self.root()?,
         })
     }
 
