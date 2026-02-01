@@ -1,9 +1,8 @@
 use arrow::util::pretty::print_batches;
 use autark_dataframe::{
-    Program,
+    Program, Result,
     onceframe::OnceFrame,
     sink::{Sink, csv::CsvSink, stdout::SinkStdout, void::SinkVoid},
-    Result,
 };
 use std::{path::PathBuf, str::FromStr};
 
@@ -49,8 +48,7 @@ fn t0() -> Result<()> {
         .col("quality")?
         .binaryop(mu.clone(), BinaryOpKind::Sub)?
         .binaryop(
-            sigma
-                .binaryop(frame.p.const_f64(2.0)?, BinaryOpKind::Mul)?,
+            sigma.binaryop(frame.p.const_f64(2.0)?, BinaryOpKind::Mul)?,
             BinaryOpKind::Div,
         )?;
 
