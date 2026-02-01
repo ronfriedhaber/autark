@@ -47,7 +47,7 @@ jobs:
       - name: Count LOC
         run: |
           sudo apt install -y cloc
-          cloc . --json --out=cloc.json
+          cloc .
 
       # - name: Run tests
       #   run: cargo test --verbose
