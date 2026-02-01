@@ -9,7 +9,7 @@ impl Pipeline {
         Pipeline { program }
     }
 
-    pub fn run(self) -> Artifact {
+    pub fn run(self) -> Result<Artifact> {
         // println!("{}", self.program.oppool());
         let codegen = Codegen::new(self.program);
         let codegen = codegen.codegen_flat_linear();
@@ -29,7 +29,7 @@ impl Pipeline {
         }
 
         let artifact = Artifact::new(&codegen);
-        artifact
+        Ok(artifact)
     }
 }
 
@@ -37,5 +37,5 @@ impl Pipeline {
 pub fn compile_program(program: Program) -> Result<Artifact> {
     let pipeline = Pipeline::new(program);
     let artifact = pipeline.run();
-    Ok(artifact)
+    artifact
 }
