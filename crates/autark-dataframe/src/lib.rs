@@ -1,3 +1,5 @@
+#![deny(clippy::unwrap_used)]
+
 pub(crate) mod arrow_interop;
 pub(crate) mod dataframe;
 pub(crate) mod error;

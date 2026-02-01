@@ -11,7 +11,7 @@ use arrow::{
 use pyo3::prelude::*;
 
 use crate::{
-    artifact::Artifact, dataadapter::DataFramePayload, output::ProgramOutput,
+    Result, artifact::Artifact, dataadapter::DataFramePayload, output::ProgramOutput,
     with_tinygrad::with_tinygrad,
 };
 use autark_tensor::Tensor;
@@ -50,7 +50,7 @@ impl Runtime {
         (args_data, args_name2index)
     }
 
-    pub fn run(&self, input: Vec<DataFramePayload>) -> ProgramOutput {
+    pub fn run(&self, input: Vec<DataFramePayload>) -> Result<ProgramOutput> {
         let t0 = Instant::now();
         let t1 = Instant::now();
 
@@ -124,6 +124,6 @@ impl Runtime {
 
         println!("[MPERA] RUNTIME ELAPSED={elapsed:?}");
 
-        ProgramOutput(rbs) // new type win
+        Ok(ProgramOutput(rbs)) // new type win
     }
 }

@@ -3,6 +3,7 @@ use autark_dataframe::{
     Program,
     onceframe::OnceFrame,
     sink::{Sink, csv::CsvSink, stdout::SinkStdout, void::SinkVoid},
+    Result,
 };
 use std::{path::PathBuf, str::FromStr};
 
@@ -21,7 +22,7 @@ use crate::common::hash_of_dir;
 mod common;
 
 #[test]
-fn t0() {
+fn t0() -> Result<()> {
     let csv_reader =
         CsvReader::new(PathBuf::from_str("../../extra/datasets/winequality.csv").unwrap()).unwrap();
 
@@ -32,47 +33,49 @@ fn t0() {
 
     let mu = frame
         .p
-        .dataframe(None)
-        .col("quality")
-        .reduce(ReduceOpKind::Mean);
+        .dataframe(None)?
+        .col("quality")?
+        .reduce(ReduceOpKind::Mean)?;
 
     let sigma = frame
         .p
-        .dataframe(None)
-        .col("quality")
-        .reduce(ReduceOpKind::Stdev);
+        .dataframe(None)?
+        .col("quality")?
+        .reduce(ReduceOpKind::Stdev)?;
 
     let a = frame
         .p
-        .dataframe(None)
-        .col("quality")
-        .binaryop(mu.clone(), BinaryOpKind::Sub)
+        .dataframe(None)?
+        .col("quality")?
+        .binaryop(mu.clone(), BinaryOpKind::Sub)?
         .binaryop(
-            sigma.binaryop(frame.p.const_f64(2.0), BinaryOpKind::Mul),
+            sigma
+                .binaryop(frame.p.const_f64(2.0)?, BinaryOpKind::Mul)?,
             BinaryOpKind::Div,
-        );
+        )?;
 
     let b = frame
         .p
-        .dataframe(None)
-        .col("quality")
+        .dataframe(None)?
+        .col("quality")?
         // .slice(0, 30)
-        .rolling(6)
-        .reduce(ReduceOpKind::Mean);
+        .rolling(6)?
+        .reduce(ReduceOpKind::Mean)?;
 
-    a.concat(&[b]).alias("frame", None);
+    a.concat(&[b])?.alias("frame", None)?;
 
-    mu.alias("mean", None);
-    sigma.alias("stdev", None);
+    mu.alias("mean", None)?;
+    sigma.alias("stdev", None)?;
 
+    let quality = frame.p.dataframe(None)?.col("quality")?;
     frame
         .p
-        .dataframe(None)
-        .order_by(frame.p.dataframe(None).col("quality"), false)
-        .slice(0, 10)
-        .alias("df_ordered", Some(0));
+        .dataframe(None)?
+        .order_by(quality, false)?
+        .slice(0, 10)?
+        .alias("df_ordered", Some(0))?;
 
-    frame.realize();
+    frame.realize()?;
 
     let hash = hash_of_dir("tmp").expect("Error getting hash.");
     dbg!(&hash);
@@ -82,4 +85,6 @@ fn t0() {
     // );
 
     std::thread::sleep_ms(2000);
+
+    Ok(())
 }

@@ -6,7 +6,8 @@ use std::{
 use arrow::datatypes::Schema;
 
 use crate::{
-    // element::Element,
+    Result,
+    error::Error,
     op::{BinaryOpKind, Op, OpPool, OpRef, ReduceOpKind},
 };
 
@@ -27,163 +28,108 @@ impl Program {
         }
     }
 
-    pub fn dataframe(&self, index: Option<usize>) -> Program {
-        let opref = self
-            .op_pool
-            .write()
-            .unwrap()
-            .insert(Op::DataFrame { index });
+    fn with_generic(&self, op: Op) -> Result<Program> {
+        let opref = self.op_pool.write().unwrap().insert(op);
 
-        Self {
+        Ok(Self {
             op_pool: self.op_pool.clone(),
             schema_map: self.schema_map.clone(),
 
             root: Some(opref),
+        })
+    }
+
+    fn root(&self) -> Result<OpRef> {
+        match self.root {
+            Some(x) => Ok(x),
+            None => Err(Error::ProvidedEmptyProgram),
         }
     }
 
-    pub fn col(&self, name: &str) -> Program {
-        let opref = self.op_pool.write().unwrap().insert(Op::Column {
-            dataframe: self
-                .root
-                .expect("It seems as if you forgot to select a DataFrame to fetch a Column from."),
+    pub fn dataframe(&self, index: Option<usize>) -> Result<Program> {
+        self.with_generic(Op::DataFrame { index })
+    }
+
+    pub fn col(&self, name: &str) -> Result<Program> {
+        self.with_generic(Op::Column {
+            dataframe: self.root()?,
             column: name.to_string(),
-        });
-
-        Self {
-            op_pool: self.op_pool.clone(),
-            schema_map: self.schema_map.clone(),
-            root: Some(opref),
-        }
+        })
     }
 
-    pub fn concat(&self, who: &[Program]) -> Program {
-        let opref = self.op_pool.write().unwrap().insert(Op::Concat {
-            who: [
-                // terrible alloc
-                vec![self.root.unwrap()],
-                who.iter().map(|x| x.root.unwrap()).collect::<Vec<OpRef>>(),
-            ]
-            .concat(),
-        });
-
-        Self {
-            op_pool: self.op_pool.clone(),
-            schema_map: self.schema_map.clone(),
-            root: Some(opref),
+    pub fn concat(&self, who: &[Program]) -> Result<Program> {
+        let mut op_refs = Vec::with_capacity(who.len() + 1);
+        op_refs.push(self.root()?);
+        for program in who {
+            op_refs.push(program.root()?);
         }
+
+        self.with_generic(Op::Concat { who: op_refs })
     }
 
-    pub fn slice(&self, start: isize, end: isize) -> Program {
-        let opref = self.op_pool.write().unwrap().insert(Op::Slice {
-            on: self.root.unwrap(),
+    pub fn slice(&self, start: isize, end: isize) -> Result<Program> {
+        self.with_generic(Op::Slice {
+            on: self.root()?,
             start,
             end,
-        });
-
-        Self {
-            op_pool: self.op_pool.clone(),
-            schema_map: self.schema_map.clone(),
-            root: Some(opref),
-        }
+        })
     }
 
-    pub fn rolling(&self, n: usize) -> Program {
-        let opref = self.op_pool.write().unwrap().insert(Op::Rolling {
-            on: self.root.unwrap(),
+    pub fn rolling(&self, n: usize) -> Result<Program> {
+        self.with_generic(Op::Rolling {
+            on: self.root()?,
             n,
-        });
-
-        Self {
-            op_pool: self.op_pool.clone(),
-            schema_map: self.schema_map.clone(),
-            root: Some(opref),
-        }
+        })
     }
 
-    pub fn order_by(&self, by: Program, ascending: bool) -> Program {
-        let opref = self.op_pool.write().unwrap().insert(Op::OrderBy {
-            what: self.root.unwrap(),
-            by: by.root.unwrap(),
+    pub fn order_by(&self, by: Program, ascending: bool) -> Result<Program> {
+        self.with_generic(Op::OrderBy {
+            what: self.root()?,
+            by: by.root()?,
             ascending,
-        });
-
-        Self {
-            op_pool: self.op_pool.clone(),
-            schema_map: self.schema_map.clone(),
-            root: Some(opref),
-        }
+        })
     }
 
-    pub fn alias(&self, name: &str, schema: Option<usize>) -> Program {
+    pub fn alias(&self, name: &str, schema: Option<usize>) -> Result<Program> {
+        let value = self.root()?;
         let opref = self.op_pool.write().unwrap().insert(Op::Output {
             name: name.to_string(),
-            value: self
-                .root
-                .expect("Can't designate empty Program as part of output."),
+            value,
         });
         let mut schema_map = self.schema_map.clone();
         schema_map.insert(name.to_string(), schema);
 
-        Self {
+        Ok(Self {
             op_pool: self.op_pool.clone(),
             schema_map,
             root: Some(opref),
-        }
+        })
     }
 
-    pub fn binaryop(&self, rhs: Program, kind: BinaryOpKind) -> Program {
-        let opref = self.op_pool.write().unwrap().insert(Op::BinaryOp {
+    pub fn binaryop(&self, rhs: Program, kind: BinaryOpKind) -> Result<Program> {
+        self.with_generic(Op::BinaryOp {
             kind,
-            lhs: self.root.unwrap(),
-            rhs: rhs.root.unwrap(),
-        });
-
-        Self {
-            op_pool: self.op_pool.clone(),
-            schema_map: self.schema_map.clone(),
-            root: Some(opref),
-        }
+            lhs: self.root()?,
+            rhs: rhs.root()?,
+        })
     }
 
-    pub fn filter(&self, mask: Program) -> Program {
-        let opref = self.op_pool.write().unwrap().insert(Op::Filter {
-            on: self.root.unwrap(),
-            mask: mask.root.unwrap(),
-        });
-
-        Self {
-            op_pool: self.op_pool.clone(),
-            schema_map: self.schema_map.clone(),
-            root: Some(opref),
-        }
+    pub fn filter(&self, mask: Program) -> Result<Program> {
+        self.with_generic(Op::Filter {
+            on: self.root()?,
+            mask: mask.root()?,
+        })
     }
 
-    pub fn const_f64(&self, value: f64) -> Program {
-        let opref = self
-            .op_pool
-            .write()
-            .unwrap()
-            .insert(Op::ConstantF64 { value });
-
-        Self {
-            op_pool: self.op_pool.clone(),
-            schema_map: self.schema_map.clone(),
-            root: Some(opref),
-        }
+    pub fn const_f64(&self, value: f64) -> Result<Program> {
+        self.with_generic(Op::ConstantF64 { value })
     }
 
-    pub fn reduce(&self, kind: ReduceOpKind) -> Program {
-        let opref = self.op_pool.write().unwrap().insert(Op::Reduce {
+    pub fn reduce(&self, kind: ReduceOpKind) -> Result<Program> {
+        self.with_generic(Op::Reduce {
             kind,
-            on: self.root.unwrap(),
-        });
-
-        Self {
-            op_pool: self.op_pool.clone(),
-            schema_map: self.schema_map.clone(),
-            root: Some(opref),
-        }
+            on: self.root()?,
+        })
     }
 
     // pub fn const_f64(&mut self, value: f64) -> OpRef {
