@@ -27,7 +27,7 @@ impl Runtime {
     }
 
     #[inline]
-    fn prep_input(input: &[DataFramePayload]) -> (Vec<Arc<Py<PyAny>>>, Vec<Py<PyAny>>) {
+    fn prep_input(input: &[DataFramePayload]) -> Result<(Vec<Arc<Py<PyAny>>>, Vec<Py<PyAny>>)> {
         let payloads = input;
         let data: Vec<Tensor> = payloads.iter().map(|x| x.data.clone()).collect();
         let _data_aux: Vec<Tensor> = payloads.iter().map(|x| x.data_aux.clone()).collect();
@@ -37,31 +37,31 @@ impl Runtime {
         let args_data: Vec<Arc<Py<PyAny>>> = data
             .iter()
             .enumerate()
-            .map(|(ix, x)| x.inner_cloned())
+            .map(|(_ix, x)| x.inner_cloned())
             .collect();
-        let args_name2index: Vec<Py<PyAny>> = with_tinygrad(|py| {
+
+        let args_name2index: Result<Vec<Py<PyAny>>> = with_tinygrad(|py| {
             Ok(name2index
                 .into_iter()
-                .map(|x| x.into_pyobject(py).unwrap().into_any().unbind())
+                .map(|x| -> Result<Py<PyAny>> { Ok(x.into_pyobject(py)?.into_any().unbind()) })
                 .collect())
-        })
-        .unwrap();
+        })?;
 
-        (args_data, args_name2index)
+        Ok((args_data, args_name2index?))
     }
 
     pub fn run(&self, input: Vec<DataFramePayload>) -> Result<ProgramOutput> {
         let t0 = Instant::now();
         let t1 = Instant::now();
 
-        let (args_data, args_name2index) = Runtime::prep_input(&input);
+        let (args_data, args_name2index) = Runtime::prep_input(&input)?;
         println!("[MPERA] ARG PREP LAYER0 TOOK: {:?}", t1.elapsed());
 
         use pyo3::types::PyList;
 
         let out = with_tinygrad(|py| {
             let t1 = Instant::now();
-            let py_args_data = PyList::new(py, args_data.iter().map(|data| &**data)).unwrap();
+            let py_args_data = PyList::new(py, args_data.iter().map(|data| &**data))?;
 
             println!("[MPERA] ARG PREP LAYER§ TOOK: {:?}", t1.elapsed());
             // dbg!(py_args_data.to_string());
@@ -70,16 +70,13 @@ impl Runtime {
             let out: Vec<(String, Py<PyAny>)> = self
                 .artifact
                 .object
-                .call1(py, (&py_args_data, args_name2index))
-                .unwrap()
-                .extract()
-                .unwrap();
+                .call1(py, (&py_args_data, args_name2index))?
+                .extract()?;
 
             println!("[MPERA] CALL1 RAW0 TOOK: {:?}", t1.elapsed());
 
             Ok(out)
-        })
-        .unwrap();
+        })?;
 
         let t1 = Instant::now();
         let out: Vec<(String, Vec<Arc<dyn arrow::array::Array>>)> = out
@@ -111,19 +108,21 @@ impl Runtime {
             .collect();
 
         let elapsed = t0.elapsed();
-        let rbs: HashMap<String, RecordBatch> = out
+        let rbs: Result<HashMap<String, RecordBatch>> = out
             .iter()
             .zip(schemas)
-            .map(|((key, data), schema)| {
-                (
-                    key.clone(),
-                    RecordBatch::try_new(schema, data.clone()).unwrap(),
-                )
-            })
+            .map(
+                |((key, data), schema)| match RecordBatch::try_new(schema, data.clone()) {
+                    Ok(x) => Ok((key.clone(), x)),
+                    Err(e) => Err(e.into()),
+                },
+            )
             .collect();
+
+        // let rbs = rbs?;
 
         println!("[MPERA] RUNTIME ELAPSED={elapsed:?}");
 
-        Ok(ProgramOutput(rbs)) // new type win
+        Ok(ProgramOutput(rbs?)) // new type win
     }
 }
