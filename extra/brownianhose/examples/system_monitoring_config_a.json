@@ -1,0 +1,20 @@
+{
+  "columns": {
+    "ts": {
+      "type": "timestamp",
+      "params": {}
+    },
+    "cpu_usage": {
+      "type": "brownian",
+      "params": {
+        "dt": 0.01,
+        "x0": 50.0,
+        "mu": 0.5,
+        "s": 0.5,
+        "c": 0.5,
+        "seed": 101
+      }
+    }
+  },
+  "n": 1000
+}
