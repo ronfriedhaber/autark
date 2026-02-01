@@ -1,5 +1,8 @@
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("MPERA Error")]
-    MperaError(mpera::error::Error),
+    MperaError(#[source] mpera::error::Error),
+
+    #[error("sink error: {0}")]
+    Sink(String),
 }
