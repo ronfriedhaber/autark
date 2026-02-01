@@ -4,25 +4,27 @@ use std::str::FromStr;
 use pyo3::types::{PyModule, PyTuple};
 use pyo3::{BoundObject, prelude::*};
 
+use crate::Result;
+
 #[derive(Debug)]
 pub struct PyFn {
     run: Py<PyAny>,
 }
 
 impl PyFn {
-    pub fn new(py: Python<'_>, code: &str) -> PyResult<Self> {
+    pub fn new(py: Python<'_>, code: &str) -> Result<Self> {
         let module = PyModule::from_code(
             py,
-            CString::from_str(code).unwrap().as_c_str(),
-            CString::from_str("transformation.py").unwrap().as_c_str(),
-            CString::from_str("transformation").unwrap().as_c_str(),
+            CString::from_str(code)?.as_c_str(),
+            CString::from_str("transformation.py")?.as_c_str(),
+            CString::from_str("transformation")?.as_c_str(),
         )?;
 
         let run = module.getattr("transform")?;
         if !run.is_callable() {
-            return Err(pyo3::exceptions::PyTypeError::new_err(
-                "`run` exists but is not callable",
-            ));
+            return Err(
+                pyo3::exceptions::PyTypeError::new_err("`run` exists but is not callable").into(),
+            );
         }
 
         Ok(Self { run: run.unbind() })

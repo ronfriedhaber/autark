@@ -1,4 +1,6 @@
 use crate::{
+    Result,
+    error::Error,
     op::{BinaryOpKind, OpRef, ReduceOpKind},
     program::Program,
 };
@@ -61,13 +63,13 @@ impl Codegen {
         // format!("", on.0, n)
     }
 
-    pub fn codegen_flat_linear(&self) -> String {
+    pub fn codegen_flat_linear(&self) -> Result<String> {
         use crate::op::Op::*;
         let o: String = self
             .program
             .op_pool
             .read()
-            .unwrap()
+            .map_err(|_| Error::PoisonedLock)?
             .into_iter()
             .enumerate()
             .map(|(ix, x)| match x {
@@ -135,10 +137,10 @@ impl Codegen {
         //     .map(|(ix, _)| format!("x{ix}, "))
         //     .collect();
 
-        format!(
+        Ok(format!(
             "{}\n\n\n\ndef transform(dfs: List[Tensor], name2index: Dict[str, int]):\n\toutput = [];\n{}\n\t\n\treturn output",
             include_str!("../templates/codegen/prefix.py"),
             o // &output_body[0..output_body.len() - 2]
-        )
+        ))
     }
 }

@@ -12,7 +12,7 @@ impl Pipeline {
     pub fn run(self) -> Result<Artifact> {
         // println!("{}", self.program.oppool());
         let codegen = Codegen::new(self.program);
-        let codegen = codegen.codegen_flat_linear();
+        let codegen = codegen.codegen_flat_linear()?;
 
         if debug_level() == Some(2) {
             println!("------ CODEGEN --------");
@@ -28,7 +28,7 @@ impl Pipeline {
             println!("-----------------------");
         }
 
-        let artifact = Artifact::new(&codegen);
+        let artifact = Artifact::new(&codegen)?;
         Ok(artifact)
     }
 }
