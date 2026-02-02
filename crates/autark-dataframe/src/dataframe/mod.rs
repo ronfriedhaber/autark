@@ -9,7 +9,7 @@ use arrow::{
     util::pretty::{pretty_format_batches, print_batches},
 };
 use autark_tensor::Tensor;
-use mpera::dataadapter::DataFramePayload;
+use mpera::dataadapter::{DataFramePayload, DataFramePayloadMetadata};
 
 use crate::Result;
 
@@ -20,28 +20,35 @@ pub struct DataFrame {
     record_batch: RecordBatch,
 
     data: Tensor,
+    data_aux: Tensor,
 }
 
 impl DataFrame {
     pub(crate) fn from_internal(record_batch: RecordBatch) -> Result<DataFrame> {
-        // let data = Tensor::stack(&tensors).unwrap();
-        // let data = tensors;
+        let mut data_aux_buf: Vec<u8> = Vec::new();
         let data = record_batch
             .columns()
             .iter()
             .enumerate()
             .map(|(ix, x)| {
-                Tensor::try_from_arrow_1d(x, record_batch.schema().fields()[ix].name()).unwrap()
+                Tensor::try_from_arrow_1d(
+                    x,
+                    record_batch.schema().fields()[ix].name(),
+                    &mut data_aux_buf,
+                )
+                .unwrap()
             })
             .collect::<Vec<Tensor>>();
 
         let data = Tensor::stack(&data).unwrap();
-        // let data_aux = aux;
+
+        let data_aux = Tensor::from_slice(data_aux_buf.as_slice())?;
 
         Ok(DataFrame {
             record_batch,
             // metadata,
             data,
+            data_aux,
             // data_aux,
         })
     }
@@ -49,9 +56,40 @@ impl DataFrame {
 
 impl Into<DataFramePayload> for DataFrame {
     fn into(self) -> DataFramePayload {
+        let rows = self.record_batch.num_rows();
+        let cols = self.record_batch.num_columns();
+        let mut nulls_buf: Vec<u8> = Vec::with_capacity(rows * cols);
+        let mut any_null = false;
+        for c in self.record_batch.columns().iter() {
+            for i in 0..rows {
+                let v = if c.is_valid(i) { 1u8 } else { 0u8 };
+                if v == 0 {
+                    any_null = true;
+                }
+                nulls_buf.push(v);
+            }
+        }
         DataFramePayload::new(
             self.data,
-            Tensor::from_slice(&[0.0]).unwrap(),
+            self.data_aux,
+            DataFramePayloadMetadata::new(
+                self.record_batch
+                    .schema()
+                    .fields()
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(ix, f)| match f.data_type() {
+                        arrow::datatypes::DataType::Utf8
+                        | arrow::datatypes::DataType::LargeUtf8 => Some(ix),
+                        _ => None,
+                    })
+                    .collect(),
+                if any_null {
+                    Some(Tensor::from_slice(nulls_buf.as_slice()).unwrap())
+                } else {
+                    None
+                },
+            ),
             self.record_batch
                 .schema()
                 .fields

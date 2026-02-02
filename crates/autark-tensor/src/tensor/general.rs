@@ -154,11 +154,26 @@ impl Tensor {
                 _ => {
                     return Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(format!(
                         "unsupported memoryview: format={fmt:?}, itemsize={item}"
-                    )));
+                    ))
+                    .into());
                 }
             })
         })
         .unwrap()
+    }
+
+    pub fn to_u8_vec(&self) -> Result<Vec<u8>> {
+        with_tinygrad(|py| {
+            let mv = self.inner.bind(py).call_method0("data")?;
+            let raw: Vec<u8> = mv
+                .call_method1("cast", ("B",))?
+                .call_method0("tobytes")?
+                .downcast::<pyo3::types::PyBytes>()
+                .unwrap()
+                .as_bytes()
+                .to_vec();
+            Ok(raw)
+        })
     }
 
     pub fn tolist_string(&self) -> String {
