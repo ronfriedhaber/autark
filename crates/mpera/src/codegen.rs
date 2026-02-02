@@ -138,7 +138,7 @@ impl Codegen {
         //     .collect();
 
         Ok(format!(
-            "{}\n\n\n\ndef transform(dfs: List[Tensor], name2index: Dict[str, int]):\n\toutput = [];\n{}\n\t\n\treturn output",
+            "{}\n\n\n\ndef transform(dfs: List[Tensor], data_aux: List[Tensor], name2index: Dict[str, int]):\n\toutput = [];\n{}\n\t\n\treturn output",
             include_str!("../templates/codegen/prefix.py"),
             o // &output_body[0..output_body.len() - 2]
         ))

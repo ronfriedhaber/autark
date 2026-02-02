@@ -25,20 +25,24 @@ pub struct DataFrame {
 
 impl DataFrame {
     pub(crate) fn from_internal(record_batch: RecordBatch) -> Result<DataFrame> {
-        // Shall return auxillary buffer
+        let mut data_aux_buf: Vec<u8> = Vec::new();
         let data = record_batch
             .columns()
             .iter()
             .enumerate()
             .map(|(ix, x)| {
-                Tensor::try_from_arrow_1d(x, record_batch.schema().fields()[ix].name()).unwrap()
+                Tensor::try_from_arrow_1d(
+                    x,
+                    record_batch.schema().fields()[ix].name(),
+                    &mut data_aux_buf,
+                )
+                .unwrap()
             })
             .collect::<Vec<Tensor>>();
 
         let data = Tensor::stack(&data).unwrap();
 
-        // TEMP
-        let data_aux = Tensor::from_slice(&[1.0, 2.0, 3.0])?;
+        let data_aux = Tensor::from_slice(data_aux_buf.as_slice())?;
 
         Ok(DataFrame {
             record_batch,

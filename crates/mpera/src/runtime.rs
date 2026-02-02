@@ -27,18 +27,18 @@ impl Runtime {
     }
 
     #[inline]
-    fn prep_input(input: &[DataFramePayload]) -> Result<(Vec<Arc<Py<PyAny>>>, Vec<Py<PyAny>>)> {
+    fn prep_input(
+        input: &[DataFramePayload],
+    ) -> Result<(Vec<Arc<Py<PyAny>>>, Vec<Arc<Py<PyAny>>>, Vec<Py<PyAny>>)> {
         let payloads = input;
         let data: Vec<Tensor> = payloads.iter().map(|x| x.data.clone()).collect();
-        let _data_aux: Vec<Tensor> = payloads.iter().map(|x| x.data_aux.clone()).collect();
+        let data_aux: Vec<Tensor> = payloads.iter().map(|x| x.data_aux.clone()).collect();
         let name2index: Vec<HashMap<String, usize>> =
             payloads.iter().map(|x| x.name2index.clone()).collect();
 
-        let args_data: Vec<Arc<Py<PyAny>>> = data
-            .iter()
-            .enumerate()
-            .map(|(ix, x)| x.inner_cloned())
-            .collect();
+        let args_data: Vec<Arc<Py<PyAny>>> = data.iter().map(|x| x.inner_cloned()).collect();
+        let args_data_aux: Vec<Arc<Py<PyAny>>> =
+            data_aux.iter().map(|x| x.inner_cloned()).collect();
         let args_name2index: Vec<Py<PyAny>> = with_tinygrad(|py| {
             name2index
                 .into_iter()
@@ -46,14 +46,14 @@ impl Runtime {
                 .collect::<Result<Vec<Py<PyAny>>>>()
         })?;
 
-        Ok((args_data, args_name2index))
+        Ok((args_data, args_data_aux, args_name2index))
     }
 
     pub fn run(&self, input: Vec<DataFramePayload>) -> Result<ProgramOutput> {
         let t0 = Instant::now();
         let t1 = Instant::now();
 
-        let (args_data, args_name2index) = Runtime::prep_input(&input)?;
+        let (args_data, args_data_aux, args_name2index) = Runtime::prep_input(&input)?;
         println!("[MPERA] ARG PREP LAYER0 TOOK: {:?}", t1.elapsed());
 
         use pyo3::types::PyList;
@@ -61,6 +61,8 @@ impl Runtime {
         let out = with_tinygrad(|py| {
             let t1 = Instant::now();
             let py_args_data = PyList::new(py, args_data.iter().map(|data| &**data))?;
+            let py_args_data_aux =
+                PyList::new(py, args_data_aux.iter().map(|data| &**data))?;
 
             println!("[MPERA] ARG PREP LAYER§ TOOK: {:?}", t1.elapsed());
             // dbg!(py_args_data.to_string());
@@ -69,7 +71,7 @@ impl Runtime {
             let out: Vec<(String, Py<PyAny>)> = self
                 .artifact
                 .object
-                .call1(py, (&py_args_data, args_name2index))?
+                .call1(py, (&py_args_data, &py_args_data_aux, args_name2index))?
                 .extract()?;
 
             println!("[MPERA] CALL1 RAW0 TOOK: {:?}", t1.elapsed());

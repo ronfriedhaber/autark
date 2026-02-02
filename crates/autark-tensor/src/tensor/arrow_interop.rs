@@ -11,7 +11,10 @@ use pyo3::types::PyList;
 use crate::Result;
 use crate::with_tinygrad::with_tinygrad;
 
-use arrow::array::{ArrayData, BooleanArray, Float32Array, Int32Array, Int64Array, UInt8Array};
+use arrow::array::{
+    ArrayData, BooleanArray, Float32Array, Int32Array, Int64Array, LargeStringArray, StringArray,
+    UInt8Array,
+};
 use arrow::buffer::Buffer;
 use arrow::datatypes::DataType;
 use arrow::util::bit_util;
@@ -19,7 +22,11 @@ use arrow::util::bit_util;
 use pyo3::types::PyBytes;
 
 impl super::Tensor {
-    pub fn try_from_arrow_1d(arr: &ArrayRef, name: &str) -> Result<Self> {
+    pub fn try_from_arrow_1d(
+        arr: &ArrayRef,
+        _name: &str,
+        data_aux: &mut Vec<u8>,
+    ) -> Result<Self> {
         use pyo3::exceptions::PyValueError;
 
         with_tinygrad(|py| {
@@ -30,6 +37,43 @@ impl super::Tensor {
             }
 
             let tensor_cls = py.import("tinygrad")?.getattr("Tensor")?;
+
+            if let Some(a) = arr.as_any().downcast_ref::<StringArray>() {
+                let mut end: usize = data_aux.len();
+                let mut offsets: Vec<i32> = Vec::with_capacity(a.len());
+                for i in 0..a.len() {
+                    let s = a.value(i);
+                    data_aux.extend_from_slice(s.as_bytes());
+                    end = end
+                        .checked_add(s.len())
+                        .ok_or_else(|| PyErr::new::<PyValueError, _>("string buffer overflow"))?;
+                    if end > i32::MAX as usize {
+                        return Err(PyErr::new::<PyValueError, _>(
+                            "string buffer exceeds i32 offsets",
+                        ));
+                    }
+                    offsets.push(end as i32);
+                }
+                return Ok(Self {
+                    inner: Arc::new(tensor_cls.call((offsets,), None)?.into()),
+                });
+            }
+
+            if let Some(a) = arr.as_any().downcast_ref::<LargeStringArray>() {
+                let mut end: usize = data_aux.len();
+                let mut offsets: Vec<i64> = Vec::with_capacity(a.len());
+                for i in 0..a.len() {
+                    let s = a.value(i);
+                    data_aux.extend_from_slice(s.as_bytes());
+                    end = end
+                        .checked_add(s.len())
+                        .ok_or_else(|| PyErr::new::<PyValueError, _>("string buffer overflow"))?;
+                    offsets.push(end as i64);
+                }
+                return Ok(Self {
+                    inner: Arc::new(tensor_cls.call((offsets,), None)?.into()),
+                });
+            }
 
             macro_rules! try_cast {
                 ($ty:ty) => {
@@ -109,6 +153,191 @@ impl super::Tensor {
                     "unsupported memoryview: format={fmt:?}, itemsize={item}"
                 )))?,
             })
+        })
+    }
+
+    pub fn try_into_arrow_1d_or_2d_with_aux(
+        &self,
+        data_aux: &super::Tensor,
+        string_cols: &[usize],
+    ) -> Result<Vec<ArrayRef>> {
+        if string_cols.is_empty() {
+            return self.try_into_arrow_1d_or_2d_2();
+        }
+
+        with_tinygrad(|py| {
+            let t = self.inner.bind(py);
+
+            let shape: Vec<usize> = t.getattr("shape")?.extract()?;
+            let (rows, cols) = match shape.as_slice() {
+                [n] => (*n, 1),
+                [n, m] => (*n, *m),
+                _ => {
+                    return Err(PyValueError::new_err(format!(
+                        "expected tensor shape (n,) or (n,m), got {shape:?}"
+                    )));
+                }
+            };
+            let nelems = rows
+                .checked_mul(cols)
+                .ok_or_else(|| PyValueError::new_err("shape overflow"))?;
+
+            let mv = t.call_method0("data")?;
+            let fmt: String = mv.getattr("format")?.extract()?;
+            let itemsize: usize = mv.getattr("itemsize")?.extract()?;
+            let code = fmt
+                .bytes()
+                .find(|b| !b"<>=@!".contains(b))
+                .ok_or_else(|| PyTypeError::new_err("empty memoryview format"))?
+                as char;
+
+            let raw: Vec<u8> = mv
+                .call_method1("cast", ("B",))?
+                .call_method0("tobytes")?
+                .downcast::<PyBytes>()?
+                .as_bytes()
+                .to_vec();
+
+            let expected = nelems
+                .checked_mul(itemsize)
+                .ok_or_else(|| PyValueError::new_err("byte length overflow"))?;
+            if raw.len() != expected {
+                return Err(PyValueError::new_err(format!(
+                    "buffer byte length mismatch: got {}, expected {} (nelems={}, itemsize={})",
+                    raw.len(),
+                    expected,
+                    nelems,
+                    itemsize
+                )));
+            }
+
+            let aux_mv = data_aux.inner.bind(py).call_method0("data")?;
+            let aux_raw: Vec<u8> = aux_mv
+                .call_method1("cast", ("B",))?
+                .call_method0("tobytes")?
+                .downcast::<PyBytes>()?
+                .as_bytes()
+                .to_vec();
+
+            let mut is_string = vec![false; rows];
+            for &ix in string_cols {
+                if ix >= rows {
+                    return Err(PyValueError::new_err(format!(
+                        "string column index out of range: {ix} (rows={rows})"
+                    )));
+                }
+                is_string[ix] = true;
+            }
+
+            fn parse<const N: usize, T>(raw: &[u8], f: impl Fn([u8; N]) -> T) -> Vec<T> {
+                raw.chunks_exact(N)
+                    .map(|c| f(c.try_into().unwrap()))
+                    .collect()
+            }
+
+            let mut out: Vec<ArrayRef> = Vec::with_capacity(rows);
+            let mut prev_end: i64 = 0;
+
+            match (code, itemsize) {
+                ('i', 4) => {
+                    let vals: Vec<i32> = parse::<4, _>(&raw, i32::from_le_bytes);
+                    for col in 0..rows {
+                        let start = col * cols;
+                        let end = start + cols;
+                        let slice = &vals[start..end];
+                        if is_string[col] {
+                            let mut offsets: Vec<i32> = Vec::with_capacity(cols + 1);
+                            offsets.push(0);
+                            let mut last_end = prev_end;
+                            for &v in slice {
+                                let end_abs = v as i64;
+                                if end_abs < last_end {
+                                    return Err(PyValueError::new_err(
+                                        "string offsets not monotonic",
+                                    ));
+                                }
+                                last_end = end_abs;
+                                let rel = end_abs - prev_end;
+                                if rel > i32::MAX as i64 {
+                                    return Err(PyValueError::new_err(
+                                        "string buffer exceeds i32 offsets",
+                                    ));
+                                }
+                                offsets.push(rel as i32);
+                            }
+                            let base = prev_end as usize;
+                            let last = last_end as usize;
+                            if last > aux_raw.len() {
+                                return Err(PyValueError::new_err(
+                                    "string buffer out of bounds",
+                                ));
+                            }
+                            let values = aux_raw[base..last].to_vec();
+                            let data = ArrayData::builder(DataType::Utf8)
+                                .len(cols)
+                                .add_buffer(Buffer::from(offsets))
+                                .add_buffer(Buffer::from(values))
+                                .build()
+                                .map_err(|e| {
+                                    PyValueError::new_err(format!("arrow build error: {e}"))
+                                })?;
+                            out.push(Arc::new(StringArray::from(data)) as ArrayRef);
+                            prev_end = last_end;
+                        } else {
+                            out.push(Arc::new(Int32Array::from(slice.to_vec())) as ArrayRef);
+                        }
+                    }
+                }
+                ('q', 8) => {
+                    let vals: Vec<i64> = parse::<8, _>(&raw, i64::from_le_bytes);
+                    for col in 0..rows {
+                        let start = col * cols;
+                        let end = start + cols;
+                        let slice = &vals[start..end];
+                        if is_string[col] {
+                            let mut offsets: Vec<i64> = Vec::with_capacity(cols + 1);
+                            offsets.push(0);
+                            let mut last_end = prev_end;
+                            for &end_abs in slice {
+                                if end_abs < last_end {
+                                    return Err(PyValueError::new_err(
+                                        "string offsets not monotonic",
+                                    ));
+                                }
+                                last_end = end_abs;
+                                offsets.push(end_abs - prev_end);
+                            }
+                            let base = prev_end as usize;
+                            let last = last_end as usize;
+                            if last > aux_raw.len() {
+                                return Err(PyValueError::new_err(
+                                    "string buffer out of bounds",
+                                ));
+                            }
+                            let values = aux_raw[base..last].to_vec();
+                            let data = ArrayData::builder(DataType::LargeUtf8)
+                                .len(cols)
+                                .add_buffer(Buffer::from(offsets))
+                                .add_buffer(Buffer::from(values))
+                                .build()
+                                .map_err(|e| {
+                                    PyValueError::new_err(format!("arrow build error: {e}"))
+                                })?;
+                            out.push(Arc::new(LargeStringArray::from(data)) as ArrayRef);
+                            prev_end = last_end;
+                        } else {
+                            out.push(Arc::new(Int64Array::from(slice.to_vec())) as ArrayRef);
+                        }
+                    }
+                }
+                _ => {
+                    return Err(PyTypeError::new_err(format!(
+                        "unsupported memoryview for string offsets: format={fmt:?}, itemsize={itemsize}"
+                    )));
+                }
+            }
+
+            Ok(out)
         })
     }
     pub fn try_into_arrow_1d_or_2d_2(&self) -> Result<Vec<ArrayRef>> {
