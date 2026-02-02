@@ -49,8 +49,6 @@ impl super::Tensor {
                         arr.data_type()
                     ))
                 })?;
-            // let kwargs = pyo3::types::PyDict::new(py);
-            // kwargs.set_item("name", name)?;
 
             Ok(Self {
                 inner: Arc::new(tensor_cls.call((list.unwrap(),), None)?.into()),

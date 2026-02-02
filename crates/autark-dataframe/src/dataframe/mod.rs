@@ -20,12 +20,12 @@ pub struct DataFrame {
     record_batch: RecordBatch,
 
     data: Tensor,
+    data_aux: Tensor,
 }
 
 impl DataFrame {
     pub(crate) fn from_internal(record_batch: RecordBatch) -> Result<DataFrame> {
-        // let data = Tensor::stack(&tensors).unwrap();
-        // let data = tensors;
+        // Shall return auxillary buffer
         let data = record_batch
             .columns()
             .iter()
@@ -36,12 +36,15 @@ impl DataFrame {
             .collect::<Vec<Tensor>>();
 
         let data = Tensor::stack(&data).unwrap();
-        // let data_aux = aux;
+
+        // TEMP
+        let data_aux = Tensor::from_slice(&[1.0, 2.0, 3.0])?;
 
         Ok(DataFrame {
             record_batch,
             // metadata,
             data,
+            data_aux,
             // data_aux,
         })
     }
@@ -51,7 +54,7 @@ impl Into<DataFramePayload> for DataFrame {
     fn into(self) -> DataFramePayload {
         DataFramePayload::new(
             self.data,
-            Tensor::from_slice(&[0.0]).unwrap(),
+            self.data_aux,
             self.record_batch
                 .schema()
                 .fields
