@@ -6,6 +6,7 @@ pub struct DataFramePayload {
     pub(crate) data_aux: Tensor, // shape = 1D (j,)
 
     pub(crate) name2index: HashMap<String, usize>,
+    // pub(crate) variant_index2repr: HashMap<String, usize>,
 }
 
 impl DataFramePayload {
