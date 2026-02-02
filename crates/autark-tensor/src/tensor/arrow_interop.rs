@@ -275,7 +275,9 @@ impl super::Tensor {
                     offsets.push(0);
                     for &end_abs in slice {
                         if end_abs < last_end {
-                            return Err(PyValueError::new_err("string offsets not monotonic").into());
+                            return Err(
+                                PyValueError::new_err("string offsets not monotonic").into()
+                            );
                         }
                         last_end = end_abs;
                         offsets.push(end_abs - prev_end);
@@ -299,7 +301,9 @@ impl super::Tensor {
                     offsets.push(0);
                     for &end_abs in slice {
                         if end_abs < last_end {
-                            return Err(PyValueError::new_err("string offsets not monotonic").into());
+                            return Err(
+                                PyValueError::new_err("string offsets not monotonic").into()
+                            );
                         }
                         last_end = end_abs;
                         let rel = end_abs - prev_end;

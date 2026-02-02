@@ -4,10 +4,7 @@ pub mod dtype;
 
 use std::collections::HashMap;
 
-use arrow::{
-    array::RecordBatch,
-    util::pretty::pretty_format_batches,
-};
+use arrow::{array::RecordBatch, util::pretty::pretty_format_batches};
 use autark_tensor::Tensor;
 use mpera::dataadapter::{DataFramePayload, DataFramePayloadMetadata};
 

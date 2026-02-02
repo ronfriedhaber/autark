@@ -8,10 +8,7 @@ pub struct DataFramePayloadMetadata {
 
 impl DataFramePayloadMetadata {
     pub fn new(string_cols: Vec<usize>, nulls: Option<Tensor>) -> Self {
-        Self {
-            string_cols,
-            nulls,
-        }
+        Self { string_cols, nulls }
     }
 }
 
