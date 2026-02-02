@@ -9,7 +9,7 @@ use arrow::{
     util::pretty::{pretty_format_batches, print_batches},
 };
 use autark_tensor::Tensor;
-use mpera::dataadapter::DataFramePayload;
+use mpera::dataadapter::{DataFramePayload, DataFramePayloadMetadata};
 
 use crate::Result;
 
@@ -59,17 +59,20 @@ impl Into<DataFramePayload> for DataFrame {
         DataFramePayload::new(
             self.data,
             self.data_aux,
-            self.record_batch
-                .schema()
-                .fields()
-                .iter()
-                .enumerate()
-                .filter_map(|(ix, f)| match f.data_type() {
-                    arrow::datatypes::DataType::Utf8
-                    | arrow::datatypes::DataType::LargeUtf8 => Some(ix),
-                    _ => None,
-                })
-                .collect(),
+            DataFramePayloadMetadata::new(
+                self.record_batch
+                    .schema()
+                    .fields()
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(ix, f)| match f.data_type() {
+                        arrow::datatypes::DataType::Utf8
+                        | arrow::datatypes::DataType::LargeUtf8 => Some(ix),
+                        _ => None,
+                    })
+                    .collect(),
+                None,
+            ),
             self.record_batch
                 .schema()
                 .fields

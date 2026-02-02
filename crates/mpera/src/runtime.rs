@@ -57,7 +57,7 @@ impl Runtime {
         let out_data_aux = input.get(0).map(|x| x.data_aux.clone());
         let out_string_cols = input
             .get(0)
-            .map(|x| x.string_cols.clone())
+            .map(|x| x.metadata.string_cols.clone())
             .unwrap_or_default();
         println!("[MPERA] ARG PREP LAYER0 TOOK: {:?}", t1.elapsed());
 
