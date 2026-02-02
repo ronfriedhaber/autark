@@ -11,6 +11,13 @@ use pyo3::types::PyList;
 use crate::Result;
 use crate::with_tinygrad::with_tinygrad;
 
+use arrow::array::{ArrayData, BooleanArray, Float32Array, Int32Array, Int64Array, UInt8Array};
+use arrow::buffer::Buffer;
+use arrow::datatypes::DataType;
+use arrow::util::bit_util;
+
+use pyo3::types::PyBytes;
+
 impl super::Tensor {
     pub fn try_from_arrow_1d(arr: &ArrayRef, name: &str) -> Result<Self> {
         use pyo3::exceptions::PyValueError;
@@ -105,56 +112,44 @@ impl super::Tensor {
         })
     }
     pub fn try_into_arrow_1d_or_2d_2(&self) -> Result<Vec<ArrayRef>> {
-        use arrow::array::{
-            ArrayData, BooleanArray, Float32Array, Int32Array, Int64Array, UInt8Array,
-        };
-        use arrow::buffer::Buffer;
-        use arrow::datatypes::DataType;
-        use arrow::util::bit_util;
-        use pyo3::exceptions::{PyTypeError, PyValueError};
-        use pyo3::types::PyBytes;
-
         with_tinygrad(|py| {
             let t = self.inner.bind(py);
 
             let shape: Vec<usize> = t.getattr("shape")?.extract()?;
             let (rows, cols) = match shape.as_slice() {
-                [n] => (*n, 1usize),
+                [n] => (*n, 1),
                 [n, m] => (*n, *m),
                 _ => {
-                    return Err(PyErr::new::<PyValueError, _>(format!(
+                    return Err(PyValueError::new_err(format!(
                         "expected tensor shape (n,) or (n,m), got {shape:?}"
                     )));
                 }
             };
-
             let nelems = rows
                 .checked_mul(cols)
-                .ok_or_else(|| PyErr::new::<PyValueError, _>("shape overflow"))?;
+                .ok_or_else(|| PyValueError::new_err("shape overflow"))?;
 
-            let mv0 = t.call_method0("data")?; // memoryview
-            let fmt: String = mv0.getattr("format")?.extract()?;
-            let itemsize: usize = mv0.getattr("itemsize")?.extract()?;
-
+            let mv = t.call_method0("data")?;
+            let fmt: String = mv.getattr("format")?.extract()?;
+            let itemsize: usize = mv.getattr("itemsize")?.extract()?;
             let code = fmt
                 .bytes()
                 .find(|b| !b"<>=@!".contains(b))
-                .ok_or_else(|| PyErr::new::<PyTypeError, _>("empty memoryview format"))?
+                .ok_or_else(|| PyTypeError::new_err("empty memoryview format"))?
                 as char;
-            let mvb = mv0.call_method1("cast", ("B",))?;
-            let buf = PyBuffer::<u8>::get(&mvb)?;
-            if buf.as_slice(py).is_none() {
-                return Err(PyErr::new::<PyValueError, _>("non-contiguous buffer"));
-            }
-            let binding = mvb.call_method0("tobytes")?;
-            let pybytes = binding.downcast::<PyBytes>()?;
-            let raw: Vec<u8> = pybytes.as_bytes().to_vec();
+
+            let raw: Vec<u8> = mv
+                .call_method1("cast", ("B",))?
+                .call_method0("tobytes")?
+                .downcast::<PyBytes>()?
+                .as_bytes()
+                .to_vec();
 
             let expected = nelems
                 .checked_mul(itemsize)
-                .ok_or_else(|| PyErr::new::<PyValueError, _>("byte length overflow"))?;
+                .ok_or_else(|| PyValueError::new_err("byte length overflow"))?;
             if raw.len() != expected {
-                return Err(PyErr::new::<PyValueError, _>(format!(
+                return Err(PyValueError::new_err(format!(
                     "buffer byte length mismatch: got {}, expected {} (nelems={}, itemsize={})",
                     raw.len(),
                     expected,
@@ -163,86 +158,51 @@ impl super::Tensor {
                 )));
             }
 
-            fn make_row_arrays(array: ArrayRef, rows: usize, cols: usize) -> Vec<ArrayRef> {
+            let chunk = |arr: ArrayRef| -> Vec<ArrayRef> {
                 if cols == 1 {
-                    vec![array]
+                    vec![arr]
                 } else {
-                    (0..rows).map(|i| array.slice(i * cols, cols)).collect()
+                    (0..rows).map(|i| arr.slice(i * cols, cols)).collect()
                 }
+            };
+
+            macro_rules! primitive {
+                ($arr:ty, $dtype:expr) => {{
+                    let data = ArrayData::builder($dtype)
+                        .len(nelems)
+                        .add_buffer(Buffer::from(raw))
+                        .build()
+                        .map_err(|e| PyValueError::new_err(format!("arrow build error: {e}")))?;
+                    Ok(chunk(Arc::new(<$arr>::from(data)) as ArrayRef))
+                }};
             }
 
-            let out: Vec<ArrayRef> = match (code, itemsize) {
-                ('f', 4) => {
-                    let buffer = Buffer::from(raw); // takes ownership, no extra copy
-                    let data = ArrayData::builder(DataType::Float32)
-                        .len(nelems)
-                        .add_buffer(buffer)
-                        .build()
-                        .map_err(|e| {
-                            PyErr::new::<PyValueError, _>(format!("arrow build error: {e}"))
-                        })?;
-                    let arr = Arc::new(Float32Array::from(data)) as ArrayRef;
-                    make_row_arrays(arr, rows, cols)
-                }
-
-                ('i', 4) => {
-                    let buffer = Buffer::from(raw);
-                    let data = ArrayData::builder(DataType::Int32)
-                        .len(nelems)
-                        .add_buffer(buffer)
-                        .build()
-                        .map_err(|e| {
-                            PyErr::new::<PyValueError, _>(format!("arrow build error: {e}"))
-                        })?;
-                    let arr = Arc::new(Int32Array::from(data)) as ArrayRef;
-                    make_row_arrays(arr, rows, cols)
-                }
-
-                ('q', 8) => {
-                    let buffer = Buffer::from(raw);
-                    let data = ArrayData::builder(DataType::Int64)
-                        .len(nelems)
-                        .add_buffer(buffer)
-                        .build()
-                        .map_err(|e| {
-                            PyErr::new::<PyValueError, _>(format!("arrow build error: {e}"))
-                        })?;
-                    let arr = Arc::new(Int64Array::from(data)) as ArrayRef;
-                    make_row_arrays(arr, rows, cols)
-                }
-
-                ('B', 1) => {
-                    let arr = Arc::new(UInt8Array::from(raw)) as ArrayRef;
-                    make_row_arrays(arr, rows, cols)
-                }
+            match (code, itemsize) {
+                ('f', 4) => primitive!(Float32Array, DataType::Float32),
+                ('i', 4) => primitive!(Int32Array, DataType::Int32),
+                ('q', 8) => primitive!(Int64Array, DataType::Int64),
+                ('B', 1) => Ok(chunk(Arc::new(UInt8Array::from(raw)) as ArrayRef)),
 
                 ('?', 1) => {
+                    // Boolean requires bit-packing
                     let mut bits = vec![0u8; (nelems + 7) / 8];
                     for (i, &b) in raw.iter().enumerate() {
                         if b != 0 {
                             bit_util::set_bit(&mut bits, i);
                         }
                     }
-                    let values = Buffer::from(bits);
                     let data = ArrayData::builder(DataType::Boolean)
                         .len(nelems)
-                        .add_buffer(values)
+                        .add_buffer(Buffer::from(bits))
                         .build()
-                        .map_err(|e| {
-                            PyErr::new::<PyValueError, _>(format!("arrow build error: {e}"))
-                        })?;
-                    let arr = Arc::new(BooleanArray::from(data)) as ArrayRef;
-                    make_row_arrays(arr, rows, cols)
+                        .map_err(|e| PyValueError::new_err(format!("arrow build error: {e}")))?;
+                    Ok(chunk(Arc::new(BooleanArray::from(data)) as ArrayRef))
                 }
 
-                _ => {
-                    return Err(PyErr::new::<PyTypeError, _>(format!(
-                        "unsupported memoryview: format={fmt:?}, itemsize={itemsize}"
-                    )));
-                }
-            };
-
-            Ok(out)
+                _ => Err(PyTypeError::new_err(format!(
+                    "unsupported memoryview: format={fmt:?}, itemsize={itemsize}"
+                ))),
+            }
         })
     }
 }
