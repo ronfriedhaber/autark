@@ -8,7 +8,7 @@ const DEFAULT_TINYGRAD_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../
 
 pub(crate) fn with_tinygrad<F, R>(f: F) -> Result<R, Error>
 where
-    F: FnOnce(Python<'_>) -> PyResult<R>,
+    F: FnOnce(Python<'_>) -> Result<R, Error>,
 {
     Ok(Python::attach(|py| {
         ensure_tinygrad_on_path(py)?;
@@ -17,10 +17,10 @@ where
     .unwrap())
 }
 
-fn ensure_tinygrad_on_path(py: Python<'_>) -> PyResult<()> {
+fn ensure_tinygrad_on_path(py: Python<'_>) -> Result<(), Error> {
     let sys = py.import("sys")?;
     let path_binding = sys.getattr("path")?;
-    let path = path_binding.downcast::<PyList>()?;
+    let path = path_binding.downcast::<PyList>().unwrap(); // TODO
     let tinygrad_path = tinygrad_path();
     let already_present = path
         .iter()

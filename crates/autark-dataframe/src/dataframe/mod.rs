@@ -56,6 +56,19 @@ impl DataFrame {
 
 impl Into<DataFramePayload> for DataFrame {
     fn into(self) -> DataFramePayload {
+        let rows = self.record_batch.num_rows();
+        let cols = self.record_batch.num_columns();
+        let mut nulls_buf: Vec<u8> = Vec::with_capacity(rows * cols);
+        let mut any_null = false;
+        for c in self.record_batch.columns().iter() {
+            for i in 0..rows {
+                let v = if c.is_valid(i) { 1u8 } else { 0u8 };
+                if v == 0 {
+                    any_null = true;
+                }
+                nulls_buf.push(v);
+            }
+        }
         DataFramePayload::new(
             self.data,
             self.data_aux,
@@ -71,7 +84,11 @@ impl Into<DataFramePayload> for DataFrame {
                         _ => None,
                     })
                     .collect(),
-                None,
+                if any_null {
+                    Some(Tensor::from_slice(nulls_buf.as_slice()).unwrap())
+                } else {
+                    None
+                },
             ),
             self.record_batch
                 .schema()

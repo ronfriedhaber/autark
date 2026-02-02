@@ -30,12 +30,12 @@ fn t1() -> Result<()> {
         csv_reader,
         CsvSink::new(PathBuf::from_str("./tmp").unwrap()).unwrap(),
     );
-    frame
-        .p
-        .dataframe(None)?
-        .col("Age")?
-        .reduce(ReduceOpKind::Mean)?
-        .alias("age", None)?;
+    // frame
+    //     .p
+    //     .dataframe(None)?
+    //     .col("Age")?
+    //     .reduce(ReduceOpKind::Mean)?
+    //     .alias("age", None)?;
 
     frame
         .p
