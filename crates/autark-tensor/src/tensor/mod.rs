@@ -2,6 +2,7 @@
 // pub(crate) mod equality;
 // pub(crate) mod filter;
 pub(crate) mod arrow_interop;
+pub(crate) mod arrow_to;
 pub(crate) mod general;
 
 use pyo3::prelude::*;
