@@ -16,27 +16,6 @@ use arrow::buffer::Buffer;
 use arrow::util::bit_util;
 use pyo3::types::PyBytes;
 
-// use std::sync::Arc;
-
-// use arrow::array::{
-//     Array, ArrayData, ArrayRef, BooleanArray, Float32Array, Int32Array, Int64Array, UInt8Array,
-// };
-// use arrow::buffer::Buffer;
-// use arrow::datatypes::DataType;
-// use arrow::util::bit_util;
-
-// use pyo3::buffer::PyBuffer;
-// use pyo3::exceptions::{PyTypeError, PyValueError};
-// use pyo3::prelude::*;
-// use pyo3::types::PyBytes;
-
-// use arrow_array::{Array, AsArray, types::*};
-// use arrow_schema::DataType;
-// use pyo3::exceptions::PyValueError;
-// use pyo3::prelude::*;
-// use pyo3::types::PyList;
-// use std::sync::Arc;
-
 impl super::Tensor {
     pub fn try_from_arrow_1d(arr: &ArrayRef, name: &str) -> Result<Self> {
         with_tinygrad(|py| {
