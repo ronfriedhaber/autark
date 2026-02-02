@@ -1,20 +1,14 @@
-use std::collections::HashMap;
 use std::sync::Arc;
 
 use arrow::array::{ArrayRef, *};
-use arrow::datatypes::{DataType, Field, *};
-use pyo3::buffer::PyBuffer;
-use pyo3::exceptions::{PyTypeError, PyValueError};
+use arrow::datatypes::{DataType, *};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 
 use crate::with_tinygrad::with_tinygrad;
 use crate::{Error, Result};
 
-use arrow::array::{ArrayData, BooleanArray, Float32Array, Int32Array, Int64Array, UInt8Array};
-use arrow::buffer::Buffer;
-use arrow::util::bit_util;
-use pyo3::types::PyBytes;
 
 impl super::Tensor {
     pub fn try_from_arrow_1d(arr: &ArrayRef, name: &str) -> Result<Self> {

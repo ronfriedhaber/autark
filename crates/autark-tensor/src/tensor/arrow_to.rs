@@ -1,17 +1,15 @@
 use crate::Tensor;
 
-use std::collections::HashMap;
 use std::sync::Arc;
 
 use arrow::array::{ArrayRef, *};
-use arrow::datatypes::{DataType, Field, *};
+use arrow::datatypes::DataType;
 use pyo3::buffer::PyBuffer;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::PyList;
 
 use crate::with_tinygrad::with_tinygrad;
-use crate::{Error, Result};
+use crate::Result;
 
 use arrow::array::{ArrayData, BooleanArray, Float32Array, Int32Array, Int64Array, UInt8Array};
 use arrow::buffer::Buffer;

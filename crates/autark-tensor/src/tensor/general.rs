@@ -2,7 +2,7 @@ use pyo3::{prelude::*, types::PyTuple};
 use std::sync::Arc;
 
 use arrow::array::{ArrayRef, BooleanArray, Float32Array, Int32Array, Int64Array, UInt8Array};
-use pyo3::{buffer::PyBuffer, prelude::*};
+use pyo3::buffer::PyBuffer;
 
 use crate::{Result, tensor::Tensor, with_tinygrad::with_tinygrad};
 
