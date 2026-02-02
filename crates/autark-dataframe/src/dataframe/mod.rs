@@ -61,6 +61,17 @@ impl Into<DataFramePayload> for DataFrame {
             self.data_aux,
             self.record_batch
                 .schema()
+                .fields()
+                .iter()
+                .enumerate()
+                .filter_map(|(ix, f)| match f.data_type() {
+                    arrow::datatypes::DataType::Utf8
+                    | arrow::datatypes::DataType::LargeUtf8 => Some(ix),
+                    _ => None,
+                })
+                .collect(),
+            self.record_batch
+                .schema()
                 .fields
                 .iter()
                 .enumerate()

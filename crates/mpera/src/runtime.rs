@@ -54,6 +54,11 @@ impl Runtime {
         let t1 = Instant::now();
 
         let (args_data, args_data_aux, args_name2index) = Runtime::prep_input(&input)?;
+        let out_data_aux = input.get(0).map(|x| x.data_aux.clone());
+        let out_string_cols = input
+            .get(0)
+            .map(|x| x.string_cols.clone())
+            .unwrap_or_default();
         println!("[MPERA] ARG PREP LAYER0 TOOK: {:?}", t1.elapsed());
 
         use pyo3::types::PyList;
@@ -86,7 +91,11 @@ impl Runtime {
                 let t = Tensor::new(v);
                 // dbg!(&t.shape());
 
-                match t.try_into_arrow_1d_or_2d_2() {
+                let res = match (out_data_aux.as_ref(), out_string_cols.is_empty()) {
+                    (Some(aux), false) => t.try_into_arrow_1d_or_2d_with_aux(aux, &out_string_cols),
+                    _ => t.try_into_arrow_1d_or_2d_2(),
+                };
+                match res {
                     Ok(x) => (k.clone(), x),
                     Err(e) => panic!(),
                 }
