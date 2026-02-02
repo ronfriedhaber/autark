@@ -5,7 +5,7 @@ use std::{
 };
 
 use arrow::{
-    array::RecordBatch,
+    array::{Array, RecordBatch},
     datatypes::{Field, Fields, Schema},
 };
 use pyo3::prelude::*;
@@ -49,6 +49,21 @@ impl Runtime {
         Ok((args_data, args_name2index))
     }
 
+    fn extract_output(out: Vec<(String, Py<PyAny>)>) -> Result<Vec<(String, Vec<Arc<dyn Array>>)>> {
+        Ok(out
+            .into_iter()
+            .map(|(k, v)| {
+                let t = Tensor::new(v);
+                // dbg!(&t.shape());
+
+                match t.try_into_arrow_1d_or_2d_2() {
+                    Ok(x) => (k.clone(), x),
+                    Err(_e) => panic!(),
+                }
+            })
+            .collect::<Vec<(String, Vec<Arc<dyn Array>>)>>())
+    }
+
     pub fn run(&self, input: Vec<DataFramePayload>) -> Result<ProgramOutput> {
         let t0 = Instant::now();
         let t1 = Instant::now();
@@ -78,21 +93,10 @@ impl Runtime {
         })?;
 
         let t1 = Instant::now();
-        let out: Vec<(String, Vec<Arc<dyn arrow::array::Array>>)> = out
-            .into_iter()
-            .map(|(k, v)| {
-                let t = Tensor::new(v);
-                // dbg!(&t.shape());
-
-                match t.try_into_arrow_1d_or_2d_2() {
-                    Ok(x) => (k.clone(), x),
-                    Err(e) => panic!(),
-                }
-            })
-            .collect();
 
         log::info!("[MPERA] OUT PARSE LAYER0 TOOK: {:?}", t1.elapsed());
         println!("{:?}", out);
+        let out = Self::extract_output(out)?;
 
         let schemas: Vec<Arc<Schema>> = out
             .iter()
