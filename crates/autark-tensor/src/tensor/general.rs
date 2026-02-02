@@ -1,4 +1,7 @@
-use pyo3::{prelude::*, types::PyTuple};
+use pyo3::{
+    prelude::*,
+    types::{PyDict, PyTuple},
+};
 use std::sync::Arc;
 
 use arrow::array::{ArrayRef, BooleanArray, Float32Array, Int32Array, Int64Array, UInt8Array};
@@ -20,7 +23,16 @@ impl Tensor {
     pub fn from_slice<T: Clone + for<'a> IntoPyObject<'a>>(x: &[T]) -> Result<Self> {
         let obj = with_tinygrad(|py| {
             let tg = py.import("tinygrad").unwrap();
-            let obj = tg.getattr("Tensor").unwrap().call1((x.to_vec(),)).unwrap();
+            let mut kwargs = PyDict::new(py);
+            // kwargs.
+
+            let dtypes = py.import("tinygrad")?.getattr("dtypes")?;
+            kwargs.set_item("dtype", dtypes.getattr("uint8")?)?;
+            let obj = tg
+                .getattr("Tensor")
+                .unwrap()
+                .call((x.to_vec(),), Some(&kwargs))
+                .unwrap();
             Ok(obj.unbind())
         })
         .unwrap();

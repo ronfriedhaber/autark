@@ -217,6 +217,13 @@ impl super::Tensor {
                 .as_bytes()
                 .to_vec();
 
+            dbg!(&aux_raw);
+
+            dbg!(&shape);
+            dbg!(&aux_raw.len());
+            dbg!(&std::str::from_utf8(&aux_raw));
+            // panic!();
+
             let mut is_string = vec![false; rows];
             for &ix in string_cols {
                 if ix >= rows {
@@ -269,11 +276,14 @@ impl super::Tensor {
             let mut prev_end: i64 = 0;
 
             let mut take_string = |slice: &[i64], large: bool| -> Result<ArrayRef> {
+                dbg!(&slice);
+                dbg!(large);
                 let mut last_end = prev_end;
                 if large {
                     let mut offsets: Vec<i64> = Vec::with_capacity(cols + 1);
                     offsets.push(0);
                     for &end_abs in slice {
+                        dbg!(end_abs);
                         if end_abs < last_end {
                             return Err(
                                 PyValueError::new_err("string offsets not monotonic").into()

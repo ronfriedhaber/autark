@@ -23,19 +23,14 @@ mod common;
 #[test]
 fn t1() -> Result<()> {
     let csv_reader =
-        CsvReader::new(PathBuf::from_str("../../extra/datasets/titanic_train_0.csv").unwrap())
-            .unwrap();
+        CsvReader::new(PathBuf::from_str("../../extra/datasets/string_0.csv").unwrap()).unwrap();
 
     let frame = OnceFrame::new(
         csv_reader,
         CsvSink::new(PathBuf::from_str("./tmp").unwrap()).unwrap(),
     );
 
-    frame
-        .p
-        .dataframe(None)?
-        .slice(0, 10)?
-        .alias("frame", None)?;
+    frame.p.dataframe(None)?.alias("frame", None)?;
 
     frame.realize()?;
 

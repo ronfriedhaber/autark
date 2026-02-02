@@ -1,0 +1,15 @@
+order_id,customer_id,customer_segment,product_id,product_category,unit_price,quantity,discount_pct,currency,country,channel,payment_method
+ORD-100001,CUST-8831,SMB,PROD-17,Electronics,199.99,1,0.00,USD,US,Web,CreditCard
+ORD-100001,CUST-8831,SMB,PROD-42,Accessories,29.99,2,0.10,USD,US,Web,CreditCard
+ORD-100002,CUST-1022,Enterprise,PROD-05,Software,999.00,5,0.20,USD,DE,Sales,Invoice
+ORD-100003,CUST-5541,Consumer,PROD-11,Home,79.90,1,0.00,EUR,FR,Mobile,PayPal
+ORD-100004,CUST-7742,Consumer,PROD-17,Electronics,199.99,1,0.05,GBP,UK,Web,CreditCard
+ORD-100005,CUST-3310,SMB,PROD-09,Office,15.49,10,0.15,USD,US,Web,CreditCard
+ORD-100006,CUST-1022,Enterprise,PROD-05,Software,999.00,3,0.25,USD,DE,Sales,Invoice
+ORD-100007,CUST-9981,Consumer,PROD-33,Fitness,249.00,1,0.00,USD,CA,Mobile,ApplePay
+ORD-100008,CUST-4419,SMB,PROD-21,Electronics,499.00,2,0.10,EUR,NL,Partner,Invoice
+ORD-100009,CUST-6673,Consumer,PROD-42,Accessories,29.99,3,0.00,USD,US,Web,CreditCard
+ORD-100010,CUST-8831,SMB,PROD-11,Home,79.90,2,0.05,USD,US,Mobile,PayPal
+ORD-100011,CUST-2154,Enterprise,PROD-27,Cloud,1499.00,1,0.30,USD,JP,Sales,Invoice
+ORD-100012,CUST-5541,Consumer,PROD-09,Office,15.49,4,0.00,EUR,FR,Web,CreditCard
+ORD-100013,CUST-9981,Consumer,PROD-33,Fitness,249.00,1,0.10,USD,CA,Web,CreditCard
