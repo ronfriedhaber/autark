@@ -6,6 +6,7 @@ pub mod error;
 pub mod op;
 pub mod pipeline;
 pub mod program;
+pub mod programpayload;
 // pub mod programbuilder;
 pub mod output;
 pub mod realizer;

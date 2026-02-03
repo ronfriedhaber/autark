@@ -25,7 +25,10 @@ pub(crate) fn encode_column(
 }
 
 fn dictionary_encode(arr: &StringArray) -> (Vec<i32>, Vec<String>) {
-    let mut map: Vec<String> = arr.iter().map(|value| value.unwrap().to_string()).collect();
+    let mut map: Vec<String> = arr
+        .iter()
+        .map(|value| value.unwrap_or("N/A").to_string())
+        .collect();
     map.sort();
     map.dedup();
 
@@ -35,7 +38,10 @@ fn dictionary_encode(arr: &StringArray) -> (Vec<i32>, Vec<String>) {
         .map(|(ix, value)| (value.clone(), ix as i32))
         .collect();
 
-    let indices: Vec<i32> = arr.iter().map(|value| lookup[value.unwrap()]).collect();
+    let indices: Vec<i32> = arr
+        .iter()
+        .map(|value| lookup[value.unwrap_or("N/A")])
+        .collect();
 
     (indices, map)
 }
