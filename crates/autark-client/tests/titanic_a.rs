@@ -3,7 +3,7 @@ use autark_sinks::sink::csv::CsvSink;
 use std::{path::PathBuf, str::FromStr};
 
 use autark_reader::readers::csv::CsvReader;
-use mpera::op::{BinaryOpKind, ReduceOpKind};
+use mpera::op::ReduceOpKind;
 
 use crate::common::hash_of_dir;
 
@@ -25,6 +25,14 @@ fn t1() -> Result<()> {
         .col("Age")?
         .reduce(ReduceOpKind::Mean)?
         .alias("age", None)?;
+
+    let pclass = frame.p.dataframe(None)?.col("Pclass")?;
+    frame
+        .p
+        .dataframe(None)?
+        .col("Fare")?
+        .group_by(pclass, ReduceOpKind::Mean)?
+        .alias("fare_by_class", None)?;
 
     frame
         .p

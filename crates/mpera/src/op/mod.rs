@@ -33,6 +33,18 @@ pub enum ReduceOpKind {
     Stdev,
 }
 
+impl ReduceOpKind {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            ReduceOpKind::Sum => "sum",
+            ReduceOpKind::Product => "product",
+            ReduceOpKind::Mean => "mean",
+            ReduceOpKind::Count => "len",
+            ReduceOpKind::Stdev => "std",
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum JoinKind {
     Left,

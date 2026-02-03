@@ -140,6 +140,14 @@ impl Program {
         })
     }
 
+    pub fn group_by(&self, keys: Program, kind: ReduceOpKind) -> Result<Program> {
+        self.with_generic(Op::GroupBy {
+            keys: keys.root()?,
+            values: self.root()?,
+            kind,
+        })
+    }
+
     // pub fn const_f64(&mut self, value: f64) -> OpRef {
     //     self.op_pool.insert(Op::ConstantF64 { value })
     // }
