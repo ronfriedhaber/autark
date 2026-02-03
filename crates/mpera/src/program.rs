@@ -28,6 +28,10 @@ impl Program {
         }
     }
 
+    pub fn len(&self) -> usize {
+        self.op_pool.len()
+    }
+
     fn with_generic(&self, op: Op) -> Result<Program> {
         let opref = self
             .op_pool

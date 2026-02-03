@@ -31,7 +31,7 @@ impl Realizer {
         let op = self.program.get_op(OpRef(self.pc));
         use crate::op::Op::*;
 
-        match op {}
+        // match op {}
 
         self.pc += 1;
     }
