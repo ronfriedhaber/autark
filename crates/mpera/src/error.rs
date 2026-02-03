@@ -18,4 +18,7 @@ pub enum Error {
 
     #[error("Nul Error.")]
     NulError(#[from] NulError),
+
+    #[error("Tensor Error.")]
+    Tensor(#[from] autark_tensor::Error),
 }
