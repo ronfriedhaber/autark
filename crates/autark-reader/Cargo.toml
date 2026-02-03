@@ -1,0 +1,10 @@
+[package]
+name = "autark-reader"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+autark_dataframe = { path = "../autark-dataframe" }
+autark_error = { path = "../autark-error" }
+arrow-csv = "=56.2.0"
+arrow-json = "=56.2.0"

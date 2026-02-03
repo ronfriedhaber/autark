@@ -8,7 +8,7 @@ use std::collections::HashMap;
 
 use arrow::{array::RecordBatch, util::pretty::pretty_format_batches};
 use autark_tensor::Tensor;
-use mpera::dataadapter::DataFramePayload;
+use crate::DataFramePayload;
 
 use crate::dataframe::variant::encode_column;
 use crate::{Result, preprocessing::drop_null_rows};

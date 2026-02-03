@@ -1,6 +1,7 @@
 use autark_tensor::Tensor;
+use autark_dataframe::DataFramePayload;
 
-use crate::{Result, dataadapter::DataFramePayload};
+use crate::Result;
 
 #[derive(Debug, Clone)]
 pub struct ProgramPayload {

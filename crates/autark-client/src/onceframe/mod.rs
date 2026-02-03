@@ -1,12 +1,14 @@
 use mpera::{
-    output::{ProgramOutput, fuse},
+    output::fuse,
     pipeline::Pipeline,
     program::Program,
     programpayload::ProgramPayload,
     runtime::Runtime,
 };
 
-use crate::{Error, Result, readers::OnceReader, sink::Sink};
+use autark_reader::OnceReader;
+use autark_sinks::Sink;
+use crate::{Error, Result};
 
 pub struct OnceFrame<R: OnceReader, S: Sink> {
     reader: R,

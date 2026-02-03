@@ -1,7 +1,12 @@
 [workspace]
 members = [
   "crates/mpera",
-  "crates/autark-dataframe"
-, "crates/autark-tensor", "crates/autark-error"]
+  "crates/autark-dataframe",
+  "crates/autark-reader",
+  "crates/autark-sinks",
+  "crates/autark-client",
+  "crates/autark-tensor",
+  "crates/autark-error"
+]
 
 resolver = "3"
