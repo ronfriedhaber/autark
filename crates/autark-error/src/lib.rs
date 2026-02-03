@@ -16,6 +16,9 @@ pub enum Error {
     #[error("Poisoned lock.")]
     PoisonedLock,
 
+    #[error("Reader is void.")]
+    EmptyReader,
+
     #[error("Nul Error.")]
     NulError(#[from] NulError),
 

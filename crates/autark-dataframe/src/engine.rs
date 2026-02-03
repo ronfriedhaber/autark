@@ -1,7 +1,7 @@
 use crate::{DataFrame, Result};
 
-pub trait Reader {
+pub trait OnceReader {
     type Error;
 
-    fn next(&mut self) -> Result<Option<DataFrame>>;
+    fn read(self) -> Result<DataFrame>;
 }
