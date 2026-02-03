@@ -37,6 +37,8 @@ impl Codegen {
                     BinaryOpKind::GreaterEquals => ">=",
                     BinaryOpKind::Equals => "==",
                     BinaryOpKind::NotEquals => "!=",
+                    BinaryOpKind::And => "&",
+                    BinaryOpKind::Or => "|",
                 },
                 rhs.0
             ),

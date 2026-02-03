@@ -20,6 +20,8 @@ pub enum BinaryOpKind {
     GreaterEquals,
     Equals,
     NotEquals,
+    And,
+    Or,
 }
 
 #[derive(Debug, Clone)]
