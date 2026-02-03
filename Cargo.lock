@@ -253,22 +253,26 @@ dependencies = [
 ]
 
 [[package]]
-name = "autark_dataframe"
+name = "autark-client"
 version = "0.1.0"
 dependencies = [
- "arrow",
- "arrow-csv",
- "arrow-json",
- "autark_error",
- "autark_tensor",
+ "autark-error",
+ "autark-reader",
+ "autark-sinks",
  "mpera",
- "serde",
- "serde_json",
- "thiserror",
 ]
 
 [[package]]
-name = "autark_error"
+name = "autark-dataframe"
+version = "0.1.0"
+dependencies = [
+ "arrow",
+ "autark-error",
+ "autark-tensor",
+]
+
+[[package]]
+name = "autark-error"
 version = "0.1.0"
 dependencies = [
  "arrow",
@@ -277,11 +281,30 @@ dependencies = [
 ]
 
 [[package]]
-name = "autark_tensor"
+name = "autark-reader"
+version = "0.1.0"
+dependencies = [
+ "arrow-csv",
+ "arrow-json",
+ "autark-dataframe",
+ "autark-error",
+]
+
+[[package]]
+name = "autark-sinks"
 version = "0.1.0"
 dependencies = [
  "arrow",
- "autark_error",
+ "autark-error",
+ "mpera",
+]
+
+[[package]]
+name = "autark-tensor"
+version = "0.1.0"
+dependencies = [
+ "arrow",
+ "autark-error",
  "pyo3",
  "serde",
  "serde_json",
@@ -632,8 +655,9 @@ name = "mpera"
 version = "0.1.0"
 dependencies = [
  "arrow",
- "autark_error",
- "autark_tensor",
+ "autark-dataframe",
+ "autark-error",
+ "autark-tensor",
  "log",
  "pyo3",
  "serde",

@@ -7,10 +7,10 @@ use arrow::{
 use pyo3::prelude::*;
 
 use crate::{
-    Result, artifact::Artifact, dataadapter::DataFramePayload, output::ProgramOutput,
-    postprocessing::apply_variant_map, programpayload::ProgramPayload,
-    with_tinygrad::with_tinygrad,
+    Result, artifact::Artifact, output::ProgramOutput, postprocessing::apply_variant_map,
+    programpayload::ProgramPayload, with_tinygrad::with_tinygrad,
 };
+use autark_dataframe::DataFramePayload;
 use autark_tensor::Tensor;
 
 pub struct Runtime {

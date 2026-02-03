@@ -10,7 +10,8 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
 arrow = "=56.2.0"
-autark_tensor = { path = "../autark-tensor" }
-autark_error = { path = "../autark-error" }
+autark-tensor = { path = "../autark-tensor" }
+autark-dataframe = { path = "../autark-dataframe" }
+autark-error = { path = "../autark-error" }
 
 log = "=0.4.28"

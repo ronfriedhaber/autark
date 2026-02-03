@@ -1,5 +1,6 @@
 use crate::readers::OnceReader;
-use crate::{DataFrame, Result};
+use autark_dataframe::DataFrame;
+use crate::Result;
 use std::path::PathBuf;
 
 use std::{fs::File, io::BufReader, sync::Arc};
@@ -29,7 +30,7 @@ impl JsonReader {
 impl OnceReader for JsonReader {
     type Error = crate::Error;
 
-    fn read(mut self) -> crate::Result<crate::DataFrame> {
+    fn read(mut self) -> Result<DataFrame> {
         match self.reader.next() {
             Some(batch) => {
                 let df = DataFrame::try_from(batch?)?;

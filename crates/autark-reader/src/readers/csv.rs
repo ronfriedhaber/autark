@@ -1,5 +1,6 @@
 use crate::readers::OnceReader;
-use crate::{DataFrame, Result};
+use autark_dataframe::DataFrame;
+use crate::Result;
 use std::path::PathBuf;
 
 use std::{
@@ -39,7 +40,7 @@ impl CsvReader {
 impl OnceReader for CsvReader {
     type Error = crate::Error;
 
-    fn read(mut self) -> crate::Result<crate::DataFrame> {
+    fn read(mut self) -> Result<DataFrame> {
         match self.reader.next() {
             Some(batch) => {
                 let df = DataFrame::try_from(batch?)?;

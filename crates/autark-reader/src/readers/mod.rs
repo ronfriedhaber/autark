@@ -1,7 +1,8 @@
 pub mod csv;
 pub mod json;
 
-use crate::{DataFrame, Result};
+use autark_dataframe::DataFrame;
+use crate::Result;
 
 pub trait OnceReader {
     type Error;

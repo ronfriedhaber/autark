@@ -1,6 +1,5 @@
 pub mod artifact;
 pub mod codegen;
-pub mod dataadapter;
 // pub mod element;
 pub mod error;
 pub mod op;

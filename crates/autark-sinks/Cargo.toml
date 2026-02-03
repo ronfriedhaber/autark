@@ -1,10 +1,10 @@
 [package]
-name = "autark-dataframe"
+name = "autark-sinks"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-autark-tensor = { path = "../autark-tensor" }
 autark-error = { path = "../autark-error" }
+mpera = { path = "../mpera" }
 
 arrow = { version = "=56.2.0", features = [ "prettyprint" ] }
