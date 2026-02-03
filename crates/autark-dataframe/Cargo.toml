@@ -1,10 +1,10 @@
 [package]
-name = "autark_dataframe"
+name = "autark-dataframe"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-autark_tensor = { path = "../autark-tensor" }
-autark_error = { path = "../autark-error" }
+autark-tensor = { path = "../autark-tensor" }
+autark-error = { path = "../autark-error" }
 
 arrow = { version = "=56.2.0", features = [ "prettyprint" ] }

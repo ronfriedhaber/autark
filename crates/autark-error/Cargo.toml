@@ -1,5 +1,5 @@
 [package]
-name = "autark_error"
+name = "autark-error"
 version = "0.1.0"
 edition = "2024"
 

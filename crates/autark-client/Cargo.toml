@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-autark_error = { path = "../autark-error" }
+autark-error = { path = "../autark-error" }
 autark-reader = { path = "../autark-reader" }
 autark-sinks = { path = "../autark-sinks" }
 mpera = { path = "../mpera" }
