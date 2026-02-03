@@ -27,15 +27,13 @@ impl<R: Reader, S: Sink> OnceFrame<R, S> {
     // thinking: what happens if needers more than one frame, perchance acept sequence of reader
     pub fn realize(mut self) -> Result<()> {
         let pipeline = Pipeline::new(self.p);
-        let artifact = pipeline.run().map_err(Error::MperaError)?;
+        let artifact = pipeline.run()?;
         let runtime = Runtime::new(artifact);
 
         let mut outputs: Vec<ProgramOutput> = Vec::new();
 
         while let Some(x) = self.reader.next()? {
-            let output = runtime
-                .run(ProgramPayload::new(vec![x.into()]).map_err(Error::MperaError)?)
-                .map_err(Error::MperaError)?;
+            let output = runtime.run(ProgramPayload::new(vec![x.into()])?)?;
             outputs.push(output);
         }
 

@@ -1,0 +1,10 @@
+[package]
+name = "autark_error"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+thiserror = "=2.0.17"
+
+pyo3 = { version = "=0.26", features = ["auto-initialize", "serde"] }
+arrow = "=56.2.0"

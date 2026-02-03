@@ -1,24 +1,26 @@
 use std::ffi::NulError;
 
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error("Provided Empty Program")]
-    ProvidedEmptyProgram,
-    #[error("Problem initializing program.")]
-    ErrorInitializingProgram,
+pub use autark_error::Error;
 
-    #[error("Problem interfacing with CPython.")]
-    PyO3Error(#[from] pyo3::PyErr),
+// #[derive(thiserror::Error, Debug)]
+// pub enum Error {
+//     #[error("Provided Empty Program")]
+//     ProvidedEmptyProgram,
+//     #[error("Problem initializing program.")]
+//     ErrorInitializingProgram,
 
-    #[error("Problem interfacing with Arrow.")]
-    ArrowError(#[from] arrow::error::ArrowError),
+//     #[error("Problem interfacing with CPython.")]
+//     PyO3Error(#[from] pyo3::PyErr),
 
-    #[error("Poisoned lock.")]
-    PoisonedLock,
+//     #[error("Problem interfacing with Arrow.")]
+//     ArrowError(#[from] arrow::error::ArrowError),
 
-    #[error("Nul Error.")]
-    NulError(#[from] NulError),
+//     #[error("Poisoned lock.")]
+//     PoisonedLock,
 
-    #[error("Tensor Error.")]
-    Tensor(#[from] autark_tensor::Error),
-}
+//     #[error("Nul Error.")]
+//     NulError(#[from] NulError),
+
+//     #[error("Tensor Error.")]
+//     Tensor(#[from] autark_tensor::Error),
+// }
