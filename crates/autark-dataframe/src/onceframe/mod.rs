@@ -2,10 +2,11 @@ use mpera::{
     output::{ProgramOutput, fuse},
     pipeline::Pipeline,
     program::Program,
+    programpayload::ProgramPayload,
     runtime::Runtime,
 };
 
-use crate::{readers::Reader, sink::Sink, Error, Result};
+use crate::{Error, Result, readers::Reader, sink::Sink};
 
 pub struct OnceFrame<R: Reader, S: Sink> {
     reader: R,
@@ -33,7 +34,7 @@ impl<R: Reader, S: Sink> OnceFrame<R, S> {
 
         while let Some(x) = self.reader.next()? {
             let output = runtime
-                .run(vec![x.into()])
+                .run(ProgramPayload::new(vec![x.into()]).map_err(Error::MperaError)?)
                 .map_err(Error::MperaError)?;
             outputs.push(output);
         }

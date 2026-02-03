@@ -1,4 +1,4 @@
-use std::{ffi::NulError, sync::PoisonError};
+use std::ffi::NulError;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -18,4 +18,7 @@ pub enum Error {
 
     #[error("Nul Error.")]
     NulError(#[from] NulError),
+
+    #[error("Tensor Error.")]
+    Tensor(#[from] autark_tensor::Error),
 }

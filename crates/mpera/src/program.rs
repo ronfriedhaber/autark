@@ -3,8 +3,6 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-use arrow::datatypes::Schema;
-
 use crate::{
     Result,
     error::Error,
@@ -28,6 +26,10 @@ impl Program {
         }
     }
 
+    pub fn len(&self) -> Result<usize> {
+        Ok(self.op_pool.read().map_err(|_| Error::PoisonedLock)?.len())
+    }
+
     fn with_generic(&self, op: Op) -> Result<Program> {
         let opref = self
             .op_pool
@@ -41,6 +43,13 @@ impl Program {
 
             root: Some(opref),
         })
+    }
+
+    pub(crate) fn get_op(&self, opref: OpRef) -> Option<Op> {
+        match self.op_pool.read().unwrap().get(opref) {
+            Some(x) => Some(x.clone()),
+            None => None,
+        } // TODO: Not clone
     }
 
     fn root(&self) -> Result<OpRef> {

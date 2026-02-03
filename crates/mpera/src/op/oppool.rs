@@ -14,6 +14,10 @@ impl OpPool {
         Some(self.0.get(opref.0)?)
     }
 
+    pub(crate) fn len(&self) -> usize {
+        self.0.len()
+    }
+
     pub(crate) fn insert(&mut self, op: Op) -> OpRef {
         let ix = self.0.len();
         self.0.push(op);

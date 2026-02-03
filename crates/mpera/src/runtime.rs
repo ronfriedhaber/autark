@@ -1,8 +1,4 @@
-use std::{
-    collections::{BTreeMap, HashMap},
-    sync::Arc,
-    time::Instant,
-};
+use std::{collections::HashMap, sync::Arc, time::Instant};
 
 use arrow::{
     array::{Array, RecordBatch},
@@ -12,6 +8,7 @@ use pyo3::prelude::*;
 
 use crate::{
     Result, artifact::Artifact, dataadapter::DataFramePayload, output::ProgramOutput,
+    postprocessing::apply_variant_map, programpayload::ProgramPayload,
     with_tinygrad::with_tinygrad,
 };
 use autark_tensor::Tensor;
@@ -49,22 +46,25 @@ impl Runtime {
         Ok((args_data, args_name2index))
     }
 
-    fn extract_output(out: Vec<(String, Py<PyAny>)>) -> Result<Vec<(String, Vec<Arc<dyn Array>>)>> {
-        Ok(out
-            .into_iter()
+    fn extract_output(
+        out: Vec<(String, Py<PyAny>)>,
+        variant_map: &[Vec<String>],
+    ) -> Result<Vec<(String, Vec<Arc<dyn Array>>)>> {
+        out.into_iter()
             .map(|(k, v)| {
                 let t = Tensor::new(v);
-                // dbg!(&t.shape());
-
-                match t.try_into_arrow_1d_or_2d_2() {
-                    Ok(x) => (k.clone(), x),
-                    Err(_e) => panic!(),
-                }
+                let arrays = t.try_into_arrow_1d_or_2d_2()?;
+                let arrays = apply_variant_map(arrays, variant_map)?;
+                Ok((k, arrays))
             })
-            .collect::<Vec<(String, Vec<Arc<dyn Array>>)>>())
+            .collect::<Result<Vec<(String, Vec<Arc<dyn Array>>)>>>()
     }
 
-    pub fn run(&self, input: Vec<DataFramePayload>) -> Result<ProgramOutput> {
+    pub fn run(&self, input: ProgramPayload) -> Result<ProgramOutput> {
+        let ProgramPayload {
+            dataframes: input,
+            variant_map,
+        } = input;
         let t0 = Instant::now();
         let t1 = Instant::now();
 
@@ -96,7 +96,7 @@ impl Runtime {
 
         log::info!("[MPERA] OUT PARSE LAYER0 TOOK: {:?}", t1.elapsed());
         println!("{:?}", out);
-        let out = Self::extract_output(out)?;
+        let out = Self::extract_output(out, &variant_map)?;
 
         let schemas: Vec<Arc<Schema>> = out
             .iter()
