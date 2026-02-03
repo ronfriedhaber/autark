@@ -10,6 +10,7 @@ pub mod program;
 pub mod output;
 pub mod realizer;
 pub mod runtime;
+pub(crate) mod postprocessing;
 pub mod string;
 // pub mod tensor;
 
