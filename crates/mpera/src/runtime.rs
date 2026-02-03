@@ -12,7 +12,7 @@ use pyo3::prelude::*;
 
 use crate::{
     Result, artifact::Artifact, dataadapter::DataFramePayload, output::ProgramOutput,
-    postprocessing::apply_variant_map, with_tinygrad::with_tinygrad,
+    postprocessing::apply_variant_map, programpayload::ProgramPayload, with_tinygrad::with_tinygrad,
 };
 use autark_tensor::Tensor;
 
@@ -63,7 +63,9 @@ impl Runtime {
             .collect::<Result<Vec<(String, Vec<Arc<dyn Array>>)>>>()
     }
 
-    pub fn run(&self, input: Vec<DataFramePayload>) -> Result<ProgramOutput> {
+    pub fn run(&self, mut input: ProgramPayload) -> Result<ProgramOutput> {
+        input.variant_fuse()?;
+        let input = input.dataframes;
         let t0 = Instant::now();
         let t1 = Instant::now();
 

@@ -1,11 +1,6 @@
-use std::sync::Arc;
-
-use arrow::{
-    array::{Array, ArrowPrimitiveType, BooleanArray, PrimitiveArray, RecordBatch, StringArray},
-    datatypes::ArrowTimestampType,
-};
+use arrow::array::RecordBatch;
 // use arrow::array::RecordBatch;
-use crate::{DataFrame, dtype::DType};
+use crate::DataFrame;
 
 pub type ArrowDataType = arrow::datatypes::DataType;
 

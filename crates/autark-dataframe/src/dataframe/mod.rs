@@ -6,11 +6,7 @@ pub(crate) mod variant;
 
 use std::collections::HashMap;
 
-use arrow::{
-    array::{RecordBatch, UInt32Array},
-    compute::take,
-    util::pretty::{pretty_format_batches, print_batches},
-};
+use arrow::{array::RecordBatch, util::pretty::pretty_format_batches};
 use autark_tensor::Tensor;
 use mpera::dataadapter::DataFramePayload;
 

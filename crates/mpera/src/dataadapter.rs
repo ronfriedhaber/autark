@@ -1,6 +1,7 @@
 use autark_tensor::Tensor;
 use std::collections::HashMap;
 
+#[derive(Debug, Clone)]
 pub struct DataFramePayload {
     pub(crate) data: Tensor,     // shape = 2D (k,n)
     pub(crate) data_aux: Tensor, // shape = 1D (j,)
