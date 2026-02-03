@@ -8,6 +8,7 @@ pub mod pipeline;
 pub mod program;
 // pub mod programbuilder;
 pub mod output;
+pub mod realizer;
 pub mod runtime;
 pub mod string;
 // pub mod tensor;
