@@ -7,8 +7,7 @@ use autark_dataframe::{
 use std::{path::PathBuf, str::FromStr};
 
 use autark_dataframe::{
-    DataFrame,
-    readers::{Reader, csv::CsvReader},
+    readers::csv::CsvReader,
 };
 use mpera::{
     op::{BinaryOpKind, ReduceOpKind},

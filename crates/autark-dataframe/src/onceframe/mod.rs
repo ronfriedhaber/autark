@@ -6,15 +6,15 @@ use mpera::{
     runtime::Runtime,
 };
 
-use crate::{Error, Result, readers::Reader, sink::Sink};
+use crate::{Error, Result, readers::OnceReader, sink::Sink};
 
-pub struct OnceFrame<R: Reader, S: Sink> {
+pub struct OnceFrame<R: OnceReader, S: Sink> {
     reader: R,
     sink: S,
     pub p: Program,
 }
 
-impl<R: Reader, S: Sink> OnceFrame<R, S> {
+impl<R: OnceReader, S: Sink> OnceFrame<R, S> {
     pub fn new(reader: R, sink: S) -> OnceFrame<R, S> {
         OnceFrame {
             reader,
@@ -25,17 +25,14 @@ impl<R: Reader, S: Sink> OnceFrame<R, S> {
 
     // shall take S: Sink
     // thinking: what happens if needers more than one frame, perchance acept sequence of reader
-    pub fn realize(mut self) -> Result<()> {
+    pub fn realize(self) -> Result<()> {
         let pipeline = Pipeline::new(self.p);
         let artifact = pipeline.run()?;
         let runtime = Runtime::new(artifact);
 
-        let mut outputs: Vec<ProgramOutput> = Vec::new();
-
-        while let Some(x) = self.reader.next()? {
-            let output = runtime.run(ProgramPayload::new(vec![x.into()])?)?;
-            outputs.push(output);
-        }
+        let df = self.reader.read()?;
+        let output = runtime.run(ProgramPayload::new(vec![df.into()])?)?;
+        let outputs = vec![output];
 
         self.sink
             .sink(fuse(&outputs))
