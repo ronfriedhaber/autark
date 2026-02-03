@@ -1,4 +1,4 @@
-use std::{ffi::NulError, sync::PoisonError};
+use std::ffi::NulError;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {

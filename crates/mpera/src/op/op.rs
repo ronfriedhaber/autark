@@ -1,4 +1,4 @@
-use crate::op::{BinaryOpKind, JoinKind, OpRef, ReduceOpKind};
+use crate::op::{BinaryOpKind, OpRef, ReduceOpKind};
 
 #[derive(Debug, Clone)]
 pub enum Op {

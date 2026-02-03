@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::{Result, error::Error, pyfn::PyFn, with_tinygrad::with_tinygrad};
 
 #[derive(Debug)]

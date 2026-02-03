@@ -1,6 +1,6 @@
 use autark_tensor::Tensor;
 
-use crate::{dataadapter::DataFramePayload, Result};
+use crate::{Result, dataadapter::DataFramePayload};
 
 #[derive(Debug, Clone)]
 pub struct ProgramPayload {
@@ -36,7 +36,7 @@ impl ProgramPayload {
 
             if offsets.iter().any(|&v| v != 0) {
                 let offset_tensor = Tensor::from_slice(&offsets)?;
-                payload.data = (&payload.data + &offset_tensor);
+                payload.data = &payload.data + &offset_tensor;
             }
         }
 

@@ -23,7 +23,9 @@ macro_rules! impl_pytensor_binaryop_tensor {
                 })
                 .unwrap();
 
-                Tensor { inner: Arc::new(inner) }
+                Tensor {
+                    inner: Arc::new(inner),
+                }
             }
         }
     };
@@ -47,7 +49,9 @@ macro_rules! impl_pytensor_binaryop_scalar {
                 })
                 .unwrap();
 
-                Tensor { inner: Arc::new(inner) }
+                Tensor {
+                    inner: Arc::new(inner),
+                }
             }
         }
     };

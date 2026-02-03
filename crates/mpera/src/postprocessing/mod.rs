@@ -82,12 +82,10 @@ fn map_index(map: &[String], idx: i64) -> Result<String> {
         )
         .into());
     }
-    map.get(idx as usize)
-        .cloned()
-        .ok_or_else(|| {
-            arrow::error::ArrowError::InvalidArgumentError(format!(
-                "variant index out of bounds: {idx}"
-            ))
-            .into()
-        })
+    map.get(idx as usize).cloned().ok_or_else(|| {
+        arrow::error::ArrowError::InvalidArgumentError(format!(
+            "variant index out of bounds: {idx}"
+        ))
+        .into()
+    })
 }

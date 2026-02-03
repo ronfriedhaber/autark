@@ -3,8 +3,6 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-use arrow::datatypes::Schema;
-
 use crate::{
     Result,
     error::Error,

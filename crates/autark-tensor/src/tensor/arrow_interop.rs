@@ -9,7 +9,6 @@ use pyo3::types::PyList;
 use crate::with_tinygrad::with_tinygrad;
 use crate::{Error, Result};
 
-
 impl super::Tensor {
     pub fn try_from_arrow_1d(arr: &ArrayRef, name: &str) -> Result<Self> {
         with_tinygrad(|py| {

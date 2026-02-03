@@ -8,8 +8,8 @@ use pyo3::buffer::PyBuffer;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 
-use crate::with_tinygrad::with_tinygrad;
 use crate::Result;
+use crate::with_tinygrad::with_tinygrad;
 
 use arrow::array::{ArrayData, BooleanArray, Float32Array, Int32Array, Int64Array, UInt8Array};
 use arrow::buffer::Buffer;

@@ -9,9 +9,9 @@ pub mod program;
 pub mod programpayload;
 // pub mod programbuilder;
 pub mod output;
+pub(crate) mod postprocessing;
 pub mod realizer;
 pub mod runtime;
-pub(crate) mod postprocessing;
 pub mod string;
 // pub mod tensor;
 

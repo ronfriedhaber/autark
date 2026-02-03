@@ -1,8 +1,4 @@
-use std::{
-    collections::{BTreeMap, HashMap},
-    sync::Arc,
-    time::Instant,
-};
+use std::{collections::HashMap, sync::Arc, time::Instant};
 
 use arrow::{
     array::{Array, RecordBatch},
@@ -12,7 +8,8 @@ use pyo3::prelude::*;
 
 use crate::{
     Result, artifact::Artifact, dataadapter::DataFramePayload, output::ProgramOutput,
-    postprocessing::apply_variant_map, programpayload::ProgramPayload, with_tinygrad::with_tinygrad,
+    postprocessing::apply_variant_map, programpayload::ProgramPayload,
+    with_tinygrad::with_tinygrad,
 };
 use autark_tensor::Tensor;
 
