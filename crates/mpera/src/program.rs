@@ -28,8 +28,8 @@ impl Program {
         }
     }
 
-    pub fn len(&self) -> usize {
-        self.op_pool.len()
+    pub fn len(&self) -> Result<usize> {
+        Ok(self.op_pool.read().map_err(|_| Error::PoisonedLock)?.len())
     }
 
     fn with_generic(&self, op: Op) -> Result<Program> {
