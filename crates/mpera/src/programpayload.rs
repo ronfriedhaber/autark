@@ -5,11 +5,18 @@ use crate::{Result, dataadapter::DataFramePayload};
 #[derive(Debug, Clone)]
 pub struct ProgramPayload {
     pub(crate) dataframes: Vec<DataFramePayload>,
+    pub(crate) variant_map: Vec<Vec<String>>,
 }
 
 impl ProgramPayload {
-    pub fn new(dataframes: Vec<DataFramePayload>) -> ProgramPayload {
-        ProgramPayload { dataframes }
+    pub fn new(dataframes: Vec<DataFramePayload>) -> Result<ProgramPayload> {
+        // Kind of ugly, ban be improved..
+        let mut payload = ProgramPayload {
+            dataframes,
+            variant_map: Vec::new(),
+        };
+        payload.variant_fuse()?;
+        Ok(payload)
     }
 
     pub(crate) fn variant_fuse(&mut self) -> Result<()> {
@@ -40,6 +47,7 @@ impl ProgramPayload {
             }
         }
 
+        self.variant_map = global_map.clone();
         for payload in self.dataframes.iter_mut() {
             payload.variant_map = global_map.clone();
         }

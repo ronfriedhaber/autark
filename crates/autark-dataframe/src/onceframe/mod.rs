@@ -34,7 +34,7 @@ impl<R: Reader, S: Sink> OnceFrame<R, S> {
 
         while let Some(x) = self.reader.next()? {
             let output = runtime
-                .run(ProgramPayload::new(vec![x.into()]))
+                .run(ProgramPayload::new(vec![x.into()]).map_err(Error::MperaError)?)
                 .map_err(Error::MperaError)?;
             outputs.push(output);
         }

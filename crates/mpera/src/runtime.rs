@@ -60,9 +60,11 @@ impl Runtime {
             .collect::<Result<Vec<(String, Vec<Arc<dyn Array>>)>>>()
     }
 
-    pub fn run(&self, mut input: ProgramPayload) -> Result<ProgramOutput> {
-        input.variant_fuse()?;
-        let input = input.dataframes;
+    pub fn run(&self, input: ProgramPayload) -> Result<ProgramOutput> {
+        let ProgramPayload {
+            dataframes: input,
+            variant_map,
+        } = input;
         let t0 = Instant::now();
         let t1 = Instant::now();
 
@@ -94,10 +96,6 @@ impl Runtime {
 
         log::info!("[MPERA] OUT PARSE LAYER0 TOOK: {:?}", t1.elapsed());
         println!("{:?}", out);
-        let variant_map = input
-            .first()
-            .map(|payload| payload.variant_map.clone())
-            .unwrap_or_default();
         let out = Self::extract_output(out, &variant_map)?;
 
         let schemas: Vec<Arc<Schema>> = out
