@@ -1,6 +1,6 @@
 # The Autark Engine Monorepo
 
-** Post-Modern Analytical Processing Engine. **
+* Post-Modern Analytical Processing Engine. *
 
 ## Post-Modern?
 Quasi-Irony
