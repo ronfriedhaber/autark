@@ -6,6 +6,8 @@ Autark is an idiosyncratic approach of my own to the problem of dataframes in pa
 It attempts to defy orthodox practices in query engines and intermediate storage.
 The contemporary computational engine is a quasi-compiler which compiles to Tinygrad UOps.
 
+The contemporary source code is pre-alpha, There exists much work to be done, namely *sane, tangible, testing*, implementation of additional OPs, and better I/O primitives. At sufficent maturity, a Python interface would be constructed.
+
 ## Post-Modern?
 Quasi-Irony
 
