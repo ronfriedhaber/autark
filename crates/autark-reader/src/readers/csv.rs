@@ -41,9 +41,7 @@ impl CsvReader {
 }
 
 impl OnceReader for CsvReader {
-    type Error = crate::Error;
-
-    fn read(mut self) -> Result<DataFrame> {
+    fn read(&mut self) -> Result<DataFrame> {
         match self.reader.next() {
             Some(batch) => {
                 let df = DataFrame::try_from(batch?)?;

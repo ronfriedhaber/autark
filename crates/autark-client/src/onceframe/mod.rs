@@ -8,33 +8,42 @@ use autark_reader::OnceReader;
 use autark_sinks::Sink;
 use arrow::datatypes::Schema;
 
-pub struct OnceFrame<R: OnceReader, S: Sink> {
-    reader: R,
+pub struct OnceFrame<S: Sink> {
+    readers: Vec<Box<dyn OnceReader>>,
     sink: S,
     pub p: Program,
 }
 
-impl<R: OnceReader, S: Sink> OnceFrame<R, S> {
-    pub fn new(reader: R, sink: S) -> OnceFrame<R, S> {
+impl<S: Sink> OnceFrame<S> {
+    pub fn new<R: OnceReader + 'static>(reader: R, sink: S) -> OnceFrame<S> {
         OnceFrame {
-            reader,
+            readers: vec![Box::new(reader)],
             sink,
             p: Program::new(),
         }
     }
 
-    pub fn schema(&self) -> Result<Schema> {
-        Ok(self.reader.schema()?.as_ref().clone())
+    pub fn schema(&self, index: Option<usize>) -> Result<Schema> {
+        let idx = index.unwrap_or(0);
+        let reader = self.readers.get(idx).ok_or(Error::EmptyReader)?;
+        Ok(reader.schema()?.as_ref().clone())
     }
 
-    pub fn schema_of_columns(&self, columns: &[&str]) -> Result<Schema> {
-        let schema = self.reader.schema()?;
+    pub fn schema_of_columns(&self, index: Option<usize>, columns: &[&str]) -> Result<Schema> {
+        let idx = index.unwrap_or(0);
+        let reader = self.readers.get(idx).ok_or(Error::EmptyReader)?;
+        let schema = reader.schema()?;
         let fields: Result<Vec<_>> = columns
             .iter()
             .map(|name| Ok(schema.field_with_name(name)?.clone()))
             .collect();
         let fields = fields?;
         Ok(Schema::new(fields))
+    }
+
+    pub fn with_reader<R: OnceReader + 'static>(mut self, reader: R) -> OnceFrame<S> {
+        self.readers.push(Box::new(reader));
+        self
     }
 
     // shall take S: Sink
@@ -44,8 +53,13 @@ impl<R: OnceReader, S: Sink> OnceFrame<R, S> {
         let artifact = pipeline.run()?;
         let runtime = Runtime::new(artifact);
 
-        let df = self.reader.read()?;
-        let output = runtime.run(ProgramPayload::new(vec![df.into()])?)?;
+        let dataframes = self
+            .readers
+            .into_iter()
+            .map(|mut reader| Ok(reader.read()?.into()))
+            .collect::<Result<Vec<_>>>()?;
+
+        let output = runtime.run(ProgramPayload::new(dataframes)?)?;
         let outputs = vec![output];
 
         self.sink

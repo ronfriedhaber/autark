@@ -1,7 +1,7 @@
 use crate::{
     Result,
     error::Error,
-    op::{BinaryOpKind, OpRef, ReduceOpKind},
+    op::{BinaryOpKind, JoinKind, OpRef, ReduceOpKind},
     program::Program,
 };
 
@@ -62,6 +62,30 @@ impl Codegen {
                 helper.as_str(),
                 values.0,
                 keys.0
+            ),
+        )
+    }
+
+    fn join(
+        ix: usize,
+        left: &OpRef,
+        right: &OpRef,
+        left_on: &OpRef,
+        right_on: &OpRef,
+        kind: &JoinKind,
+    ) -> String {
+        let fn_name = match kind {
+            JoinKind::Inner => "_mpera_join_inner",
+        };
+        codegen_var_stmt_vanilla(
+            ix,
+            &format!(
+                "{}(x{}, x{}, key_left=x{}, key_right=x{})",
+                fn_name,
+                left.0,
+                right.0,
+                left_on.0,
+                right_on.0
             ),
         )
     }
@@ -130,6 +154,13 @@ impl Codegen {
                     )
                 }
                 GroupBy { keys, values, kind } => Self::groupby(ix, &keys, &values, &kind),
+                Join {
+                    left,
+                    right,
+                    left_on,
+                    right_on,
+                    kind,
+                } => Self::join(ix, &left, &right, &left_on, &right_on, &kind),
             })
             .collect();
 

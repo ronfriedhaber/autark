@@ -47,5 +47,13 @@ impl ReduceOpKind {
 
 #[derive(Debug, Clone)]
 pub enum JoinKind {
-    Left,
+    Inner,
+}
+
+impl JoinKind {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            JoinKind::Inner => "inner",
+        }
+    }
 }

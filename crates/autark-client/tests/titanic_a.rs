@@ -4,7 +4,7 @@ use std::{path::PathBuf, str::FromStr, sync::Arc};
 
 use arrow::datatypes::{DataType, Field, Schema};
 use autark_reader::readers::csv::CsvReader;
-use mpera::op::ReduceOpKind;
+use mpera::op::{JoinKind, ReduceOpKind};
 
 mod common;
 
@@ -14,10 +14,14 @@ fn t1() -> Result<()> {
         CsvReader::new(PathBuf::from_str("../../extra/datasets/titanic_train_0.csv").unwrap())
             .unwrap();
 
+    let csv_reader_2 =
+        CsvReader::new(PathBuf::from_str("../../extra/datasets/titanic_train_0.csv").unwrap())
+            .unwrap();
     let frame = OnceFrame::new(
         csv_reader,
         CsvSink::new(PathBuf::from_str("./tmp").unwrap()).unwrap(),
-    );
+    )
+    .with_reader(csv_reader_2);
     frame
         .p
         .dataframe(None)?
@@ -41,17 +45,34 @@ fn t1() -> Result<()> {
         .alias(
             "fare_by_class",
             Some(Schema::new(vec![
-                frame.schema_of_columns(&["Sex"])?.fields()[0].clone(),
+                frame
+                    .schema_of_columns(None, &["Sex"])?
+                    .fields()[0]
+                    .clone(),
                 Arc::new(Field::new("fare_mean", DataType::Float64, true)),
             ])),
         )?;
-    dbg!(frame.schema_of_columns(&["Sex"]));
+    dbg!(frame.schema_of_columns(None, &["Sex"]));
     frame
         .p
         .dataframe(None)?
         .col("Sex")?
         .slice(0, 10)?
-        .alias("sliced_gender", Some(frame.schema_of_columns(&["Sex"])?))?;
+        .alias(
+            "sliced_gender",
+            Some(frame.schema_of_columns(None, &["Sex"])?),
+        )?;
+
+    let left = frame.p.dataframe(Some(0))?;
+    let right = frame.p.dataframe(Some(1))?;
+    let left_key = left.col("PassengerId")?;
+    let right_key = right.col("PassengerId")?;
+    let base_schema = frame.schema(Some(0))?;
+    let mut join_fields = Vec::with_capacity(base_schema.fields().len() * 2);
+    join_fields.extend(base_schema.fields().iter().cloned());
+    join_fields.extend(base_schema.fields().iter().cloned());
+    left.join(right, left_key, right_key, JoinKind::Inner)?
+        .alias("joined", Some(Schema::new(join_fields)))?;
 
     // frame.p.dataframe(None)?.slice(0, 10)?.alias(
     //     "frame",
