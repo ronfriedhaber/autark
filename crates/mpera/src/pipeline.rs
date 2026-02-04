@@ -11,6 +11,12 @@ impl Pipeline {
 
     pub fn run(self) -> Result<Artifact> {
         // println!("{}", self.program.oppool());
+        let metadata = self
+            .program
+            .metadata
+            .read()
+            .map_err(|_| crate::error::Error::PoisonedLock)?
+            .clone();
         let codegen = Codegen::new(self.program);
         let codegen = codegen.codegen_flat_linear()?;
 
@@ -28,7 +34,7 @@ impl Pipeline {
             println!("-----------------------");
         }
 
-        let artifact = Artifact::new(&codegen)?;
+        let artifact = Artifact::new(&codegen, metadata)?;
         Ok(artifact)
     }
 }

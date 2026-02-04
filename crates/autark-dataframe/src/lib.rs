@@ -6,8 +6,8 @@ pub(crate) mod dataframe;
 pub(crate) mod error;
 pub(crate) mod slimframe;
 
-pub use dataframe::*;
 pub use dataadapter::DataFramePayload;
+pub use dataframe::*;
 pub use error::*;
 
 pub use autark_tensor::Tensor;

@@ -60,7 +60,7 @@ fn t0() -> Result<()> {
         .dataframe(None)?
         .order_by(quality, false)?
         .slice(0, 10)?
-        .alias("df_ordered", Some(0))?;
+        .alias("df_ordered", None)?;
 
     frame.realize()?;
 

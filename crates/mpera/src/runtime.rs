@@ -101,10 +101,19 @@ impl Runtime {
         let schemas: Vec<Arc<Schema>> = out
             .iter()
             .map(|(k, out)| {
-                Arc::new(arrow::datatypes::Schema {
-                    fields: Fields::from_iter(out.iter().enumerate().map(|(ix, x)| {
+                let fields = match self.artifact.metadata.schema_map.get(k) {
+                    Some(schema) if schema.fields().len() == out.len() => {
+                        Fields::from_iter(out.iter().enumerate().map(|(ix, x)| {
+                            Field::new(schema.fields()[ix].name(), x.data_type().clone(), true)
+                        }))
+                    }
+                    _ => Fields::from_iter(out.iter().enumerate().map(|(ix, x)| {
                         Field::new(format!("column{ix}"), x.data_type().clone(), true)
                     })),
+                };
+
+                Arc::new(arrow::datatypes::Schema {
+                    fields,
                     metadata: HashMap::with_capacity(0),
                 })
             })

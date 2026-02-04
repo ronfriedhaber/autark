@@ -1,5 +1,3 @@
-use std::ffi::NulError;
-
 pub use autark_error::Error;
 
 // #[derive(thiserror::Error, Debug)]

@@ -49,6 +49,12 @@ pub enum Op {
 
     Concat {
         who: Vec<OpRef>, // todo: Remove Alloc,
+    },
+
+    GroupBy {
+        keys: OpRef,
+        values: OpRef,
+        kind: ReduceOpKind,
     }, // Join {
     //     left: OpRef,
     //     right: OpRef,

@@ -46,25 +46,24 @@ impl Codegen {
     }
 
     fn reduce(ix: usize, kind: &ReduceOpKind, on: &OpRef) -> String {
-        codegen_var_stmt_vanilla(
-            ix,
-            &format!(
-                "x{}.{}(axis=-1)",
-                on.0,
-                match kind {
-                    ReduceOpKind::Sum => "sum",
-                    ReduceOpKind::Product => "product",
-                    ReduceOpKind::Mean => "mean",
-                    ReduceOpKind::Count => "len",
-                    ReduceOpKind::Stdev => "std",
-                }
-            ),
-        )
+        codegen_var_stmt_vanilla(ix, &format!("x{}.{}(axis=-1)", on.0, kind.as_str()))
     }
 
     fn rolling(ix: usize, on: &OpRef, n: usize) -> String {
         codegen_var_stmt_vanilla(ix, &format!("_mpera_rolling(x{}, {})", on.0, n))
         // format!("", on.0, n)
+    }
+
+    fn groupby(ix: usize, keys: &OpRef, values: &OpRef, helper: &ReduceOpKind) -> String {
+        codegen_var_stmt_vanilla(
+            ix,
+            &format!(
+                "_mpera_groupby_{}(x{}, key=x{})",
+                helper.as_str(),
+                values.0,
+                keys.0
+            ),
+        )
     }
 
     pub fn codegen_flat_linear(&self) -> Result<String> {
@@ -130,6 +129,7 @@ impl Codegen {
                         &format!(r#"x{}.masked_select(x{})"#, on.0, mask.0),
                     )
                 }
+                GroupBy { keys, values, kind } => Self::groupby(ix, &keys, &values, &kind),
             })
             .collect();
 

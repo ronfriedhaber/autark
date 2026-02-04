@@ -1,6 +1,6 @@
+use crate::Result;
 use crate::readers::OnceReader;
 use autark_dataframe::DataFrame;
-use crate::Result;
 use std::path::PathBuf;
 
 use std::{
@@ -10,9 +10,11 @@ use std::{
 };
 
 use arrow_csv::{ReaderBuilder, reader::Format};
+use arrow::datatypes::Schema;
 
 pub struct CsvReader {
     reader: arrow_csv::reader::BufReader<std::io::BufReader<std::io::BufReader<std::fs::File>>>,
+    schema: Arc<Schema>,
 }
 
 impl CsvReader {
@@ -28,12 +30,13 @@ impl CsvReader {
 
         file.seek(SeekFrom::Start(0)).unwrap();
 
-        let reader = ReaderBuilder::new(Arc::new(schema))
+        let schema = Arc::new(schema);
+        let reader = ReaderBuilder::new(schema.clone())
             .with_header(true)
             .build(BufReader::new(file))
             .unwrap();
 
-        Ok(CsvReader { reader })
+        Ok(CsvReader { reader, schema })
     }
 }
 
@@ -48,5 +51,9 @@ impl OnceReader for CsvReader {
             }
             None => Err(crate::Error::EmptyReader),
         }
+    }
+
+    fn schema(&self) -> Result<Arc<Schema>> {
+        Ok(self.schema.clone())
     }
 }
