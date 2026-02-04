@@ -31,11 +31,8 @@ impl Runtime {
         let name2index: Vec<HashMap<String, usize>> =
             payloads.iter().map(|x| x.name2index.clone()).collect();
 
-        let args_data: Vec<Arc<Py<PyAny>>> = data
-            .iter()
-            .enumerate()
-            .map(|(ix, x)| x.inner_cloned())
-            .collect();
+        let args_data: Vec<Arc<Py<PyAny>>> =
+            data.iter().map(|x| x.inner_cloned()).collect();
         let args_name2index: Vec<Py<PyAny>> = with_tinygrad(|py| {
             name2index
                 .into_iter()

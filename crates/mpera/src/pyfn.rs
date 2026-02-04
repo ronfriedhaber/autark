@@ -2,7 +2,7 @@ use std::ffi::CString;
 use std::str::FromStr;
 
 use pyo3::types::{PyModule, PyTuple};
-use pyo3::{BoundObject, prelude::*};
+use pyo3::prelude::*;
 
 use crate::Result;
 
@@ -39,13 +39,5 @@ impl PyFn {
         run.call1(args)
     }
 
-    #[inline]
-    pub fn call<'py>(
-        &self,
-        py: Python<'py>,
-        args: &Bound<'py, pyo3::types::PyTuple>,
-        kwargs: Option<&Bound<'py, pyo3::types::PyDict>>,
-    ) -> PyResult<Bound<'py, PyAny>> {
-        self.run.bind(py).call(args, kwargs)
-    }
+ 
 }
