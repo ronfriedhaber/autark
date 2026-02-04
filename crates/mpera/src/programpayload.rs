@@ -43,7 +43,8 @@ impl ProgramPayload {
             }
 
             if offsets.iter().any(|&v| v != 0) {
-                let offset_tensor = Tensor::from_slice(&offsets)?;
+                let offset_tensor =
+                    Tensor::from_slice(&offsets)?.reshape(&[offsets.len() as isize, 1])?;
                 payload.data = &payload.data + &offset_tensor;
             }
         }

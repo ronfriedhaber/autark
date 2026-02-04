@@ -73,3 +73,28 @@ def _mpera_groupby_std(t: Tensor, key: Tensor) -> Tensor:
     mean = sums / counts
     out = ((sums2 / counts) - mean * mean).sqrt()
     return key_unique.cat(out, dim=0)
+
+def _mpera_join_inner(left: Tensor, right: Tensor, key_left: Tensor, key_right: Tensor) -> Tensor:
+    k_left = key_left.reshape(-1)
+    k_right = key_right.reshape(-1)
+    n_left = k_left.shape[0]
+    n_right = k_right.shape[0]
+
+    if n_left == 0 or n_right == 0:
+        return Tensor.empty(left.shape[0] + right.shape[0], 0, dtype=left.dtype, device=left.device)
+
+    eq = k_left.reshape(n_left, 1) == k_right.reshape(1, n_right)
+    idxs = eq.nonzero()
+
+    if idxs.shape[0] == 0:
+        return Tensor.empty(left.shape[0] + right.shape[0], 0, dtype=left.dtype, device=left.device)
+
+    left_idx = idxs[:, 0]
+    right_idx = idxs[:, 1]
+
+    left_gather = left_idx.reshape(1, -1).expand(left.shape[0], -1)
+    right_gather = right_idx.reshape(1, -1).expand(right.shape[0], -1)
+
+    left_out = left.gather(1, left_gather)
+    right_out = right.gather(1, right_gather)
+    return left_out.cat(right_out, dim=0)

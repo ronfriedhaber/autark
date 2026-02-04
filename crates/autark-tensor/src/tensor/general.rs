@@ -107,6 +107,22 @@ impl Tensor {
         })
     }
 
+    pub fn reshape(&self, shape: &[isize]) -> Result<Self> {
+        let inner = with_tinygrad(|py| {
+            let obj = self
+                .inner
+                .bind(py)
+                .call_method1("reshape", PyTuple::new(py, shape.iter()).unwrap())
+                .unwrap();
+            Ok(obj.unbind())
+        })
+        .unwrap();
+
+        Ok(Self {
+            inner: Arc::new(inner),
+        })
+    }
+
     // use std::sync::Arc;
 
     // use arrow::array::{ArrayRef, BooleanArray, Float32Array, Int32Array, Int64Array, UInt8Array};

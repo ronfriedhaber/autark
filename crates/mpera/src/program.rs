@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use crate::{
     Result,
     error::Error,
-    op::{BinaryOpKind, Op, OpPool, OpRef, ReduceOpKind},
+    op::{BinaryOpKind, JoinKind, Op, OpPool, OpRef, ReduceOpKind},
     programmetadata::ProgramMetadata,
 };
 use arrow::datatypes::Schema;
@@ -148,6 +148,22 @@ impl Program {
         self.with_generic(Op::GroupBy {
             keys: keys.root()?,
             values: self.root()?,
+            kind,
+        })
+    }
+
+    pub fn join(
+        &self,
+        right: Program,
+        left_on: Program,
+        right_on: Program,
+        kind: JoinKind,
+    ) -> Result<Program> {
+        self.with_generic(Op::Join {
+            left: self.root()?,
+            right: right.root()?,
+            left_on: left_on.root()?,
+            right_on: right_on.root()?,
             kind,
         })
     }
