@@ -1,0 +1,16 @@
+site_name: Autark's Documentation (Pre-Alpha)
+repo_url: https://github.com/ronfriedhaber/autark/
+logo: null
+docs_dir: docs
+theme:
+  name: material
+  # dark: true
+
+  palette:
+    scheme: slate
+    primary: black
+    accent: lime
+nav:
+  # - User Facing: userfacing/dtypes.md
+  - Internal:
+    - Overview: internal/overview.md
