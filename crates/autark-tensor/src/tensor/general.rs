@@ -112,11 +112,9 @@ impl Tensor {
             let obj = self
                 .inner
                 .bind(py)
-                .call_method1("reshape", PyTuple::new(py, shape.iter()).unwrap())
-                .unwrap();
+                .call_method1("reshape", PyTuple::new(py, shape.iter()))?;
             Ok(obj.unbind())
-        })
-        .unwrap();
+        })?;
 
         Ok(Self {
             inner: Arc::new(inner),
