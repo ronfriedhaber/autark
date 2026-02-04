@@ -4,7 +4,6 @@ pub(crate) mod arrow_interop;
 pub(crate) mod dataadapter;
 pub(crate) mod dataframe;
 pub(crate) mod error;
-pub(crate) mod slimframe;
 
 pub use dataadapter::DataFramePayload;
 pub use dataframe::*;

@@ -5,8 +5,8 @@ use std::path::PathBuf;
 
 use std::{fs::File, io::BufReader, sync::Arc};
 
-use arrow_json::{ReaderBuilder, reader::infer_json_schema_from_seekable};
 use arrow::datatypes::Schema;
+use arrow_json::{ReaderBuilder, reader::infer_json_schema_from_seekable};
 
 pub struct JsonReader {
     reader: arrow_json::Reader<std::io::BufReader<std::fs::File>>,

@@ -45,13 +45,6 @@ impl Program {
         })
     }
 
-    pub(crate) fn get_op(&self, opref: OpRef) -> Option<Op> {
-        match self.op_pool.read().unwrap().get(opref) {
-            Some(x) => Some(x.clone()),
-            None => None,
-        } // TODO: Not clone
-    }
-
     fn root(&self) -> Result<OpRef> {
         match self.root {
             Some(x) => Ok(x),

@@ -2,8 +2,8 @@ pub mod csv;
 pub mod json;
 
 use crate::Result;
-use autark_dataframe::DataFrame;
 use arrow::datatypes::Schema;
+use autark_dataframe::DataFrame;
 use std::sync::Arc;
 
 pub trait OnceReader {

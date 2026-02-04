@@ -4,9 +4,9 @@ use mpera::{
 };
 
 use crate::{Error, Result};
+use arrow::datatypes::Schema;
 use autark_reader::OnceReader;
 use autark_sinks::Sink;
-use arrow::datatypes::Schema;
 
 pub struct OnceFrame<S: Sink> {
     readers: Vec<Box<dyn OnceReader>>,

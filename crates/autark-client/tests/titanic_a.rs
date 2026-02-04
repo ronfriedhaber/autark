@@ -45,23 +45,15 @@ fn t1() -> Result<()> {
         .alias(
             "fare_by_class",
             Some(Schema::new(vec![
-                frame
-                    .schema_of_columns(None, &["Sex"])?
-                    .fields()[0]
-                    .clone(),
+                frame.schema_of_columns(None, &["Sex"])?.fields()[0].clone(),
                 Arc::new(Field::new("fare_mean", DataType::Float64, true)),
             ])),
         )?;
     dbg!(frame.schema_of_columns(None, &["Sex"]));
-    frame
-        .p
-        .dataframe(None)?
-        .col("Sex")?
-        .slice(0, 10)?
-        .alias(
-            "sliced_gender",
-            Some(frame.schema_of_columns(None, &["Sex"])?),
-        )?;
+    frame.p.dataframe(None)?.col("Sex")?.slice(0, 10)?.alias(
+        "sliced_gender",
+        Some(frame.schema_of_columns(None, &["Sex"])?),
+    )?;
 
     let left = frame.p.dataframe(Some(0))?;
     let right = frame.p.dataframe(Some(1))?;
