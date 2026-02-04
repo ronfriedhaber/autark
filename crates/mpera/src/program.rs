@@ -1,18 +1,17 @@
-use std::{
-    collections::HashMap,
-    sync::{Arc, RwLock},
-};
+use std::sync::{Arc, RwLock};
 
 use crate::{
     Result,
     error::Error,
     op::{BinaryOpKind, Op, OpPool, OpRef, ReduceOpKind},
+    programmetadata::ProgramMetadata,
 };
+use arrow::datatypes::Schema;
 
-#[derive(Debug, Clone)]
 pub struct Program {
     pub(crate) op_pool: Arc<RwLock<OpPool>>,
-    pub(crate) schema_map: HashMap<String, Option<usize>>,
+    // metdata is too behind an Arc<RwLock<_>> as, like with op_pool, it is expected of a program to include a single, consolidated, metadata.
+    pub(crate) metadata: Arc<RwLock<ProgramMetadata>>,
     root: Option<OpRef>,
 }
 
@@ -21,7 +20,7 @@ impl Program {
         let op_pool = Arc::new(RwLock::new(OpPool::new(1024)));
         Program {
             op_pool,
-            schema_map: HashMap::new(),
+            metadata: Arc::new(RwLock::new(ProgramMetadata::default())),
             root: None,
         }
     }
@@ -39,7 +38,7 @@ impl Program {
 
         Ok(Self {
             op_pool: self.op_pool.clone(),
-            schema_map: self.schema_map.clone(),
+            metadata: self.metadata.clone(),
 
             root: Some(opref),
         })
@@ -103,10 +102,14 @@ impl Program {
         })
     }
 
-    pub fn alias(&self, name: &str, schema: Option<usize>) -> Result<Program> {
-        // let value = self.root()?;
-        // let mut schema_map = self.schema_map.clone();
-        // schema_map.insert(name.to_string(), schema);
+    pub fn alias(&self, name: &str, schema: Option<Schema>) -> Result<Program> {
+        if let Some(schema) = schema {
+            self.metadata
+                .write()
+                .map_err(|_| Error::PoisonedLock)?
+                .schema_map
+                .insert(name.to_string(), schema);
+        }
 
         self.with_generic(Op::Output {
             name: name.to_string(),
