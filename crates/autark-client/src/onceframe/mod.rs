@@ -6,6 +6,7 @@ use mpera::{
 use crate::{Error, Result};
 use autark_reader::OnceReader;
 use autark_sinks::Sink;
+use arrow::datatypes::Schema;
 
 pub struct OnceFrame<R: OnceReader, S: Sink> {
     reader: R,
@@ -20,6 +21,20 @@ impl<R: OnceReader, S: Sink> OnceFrame<R, S> {
             sink,
             p: Program::new(),
         }
+    }
+
+    pub fn schema(&self) -> Result<Schema> {
+        Ok(self.reader.schema()?.as_ref().clone())
+    }
+
+    pub fn schema_of_columns(&self, columns: &[&str]) -> Result<Schema> {
+        let schema = self.reader.schema()?;
+        let fields: Result<Vec<_>> = columns
+            .iter()
+            .map(|name| Ok(schema.field_with_name(name)?.clone()))
+            .collect();
+        let fields = fields?;
+        Ok(Schema::new(fields))
     }
 
     // shall take S: Sink

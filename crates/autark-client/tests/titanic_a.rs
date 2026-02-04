@@ -1,6 +1,6 @@
 use autark_client::{OnceFrame, Result};
 use autark_sinks::sink::csv::CsvSink;
-use std::{path::PathBuf, str::FromStr};
+use std::{path::PathBuf, str::FromStr, sync::Arc};
 
 use arrow::datatypes::{DataType, Field, Schema};
 use autark_reader::readers::csv::CsvReader;
@@ -25,14 +25,14 @@ fn t1() -> Result<()> {
         .reduce(ReduceOpKind::Mean)?
         .alias(
             "age",
-            Some(Schema::new(vec![Field::new(
+            Some(Schema::new(vec![Arc::new(Field::new(
                 "age_mean",
                 DataType::Float64,
                 true,
-            )])),
+            ))])),
         )?;
 
-    let pclass = frame.p.dataframe(None)?.col("Pclass")?;
+    let _pclass = frame.p.dataframe(None)?.col("Pclass")?;
     frame
         .p
         .dataframe(None)?
@@ -41,10 +41,17 @@ fn t1() -> Result<()> {
         .alias(
             "fare_by_class",
             Some(Schema::new(vec![
-                Field::new("Sex", DataType::Utf8, true),
-                Field::new("fare_mean", DataType::Float64, true),
+                frame.schema_of_columns(&["Sex"])?.fields()[0].clone(),
+                Arc::new(Field::new("fare_mean", DataType::Float64, true)),
             ])),
         )?;
+    dbg!(frame.schema_of_columns(&["Sex"]));
+    frame
+        .p
+        .dataframe(None)?
+        .col("Sex")?
+        .slice(0, 10)?
+        .alias("sliced_gender", Some(frame.schema_of_columns(&["Sex"])?))?;
 
     // frame.p.dataframe(None)?.slice(0, 10)?.alias(
     //     "frame",

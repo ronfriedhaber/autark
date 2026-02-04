@@ -6,9 +6,11 @@ use std::path::PathBuf;
 use std::{fs::File, io::BufReader, sync::Arc};
 
 use arrow_json::{ReaderBuilder, reader::infer_json_schema_from_seekable};
+use arrow::datatypes::Schema;
 
 pub struct JsonReader {
     reader: arrow_json::Reader<std::io::BufReader<std::fs::File>>,
+    schema: Arc<Schema>,
 }
 
 impl JsonReader {
@@ -21,9 +23,10 @@ impl JsonReader {
 
         dbg!(&schema);
 
-        let reader = ReaderBuilder::new(Arc::new(schema)).build(reader).unwrap();
+        let schema = Arc::new(schema);
+        let reader = ReaderBuilder::new(schema.clone()).build(reader).unwrap();
 
-        Ok(JsonReader { reader })
+        Ok(JsonReader { reader, schema })
     }
 }
 
@@ -38,5 +41,9 @@ impl OnceReader for JsonReader {
             }
             None => Err(crate::Error::EmptyReader),
         }
+    }
+
+    fn schema(&self) -> Result<Arc<Schema>> {
+        Ok(self.schema.clone())
     }
 }

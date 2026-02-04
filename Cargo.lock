@@ -285,6 +285,7 @@ dependencies = [
 name = "autark-reader"
 version = "0.1.0"
 dependencies = [
+ "arrow",
  "arrow-csv",
  "arrow-json",
  "autark-dataframe",

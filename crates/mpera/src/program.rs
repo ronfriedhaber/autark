@@ -8,6 +8,7 @@ use crate::{
 };
 use arrow::datatypes::Schema;
 
+#[derive(Clone)]
 pub struct Program {
     pub(crate) op_pool: Arc<RwLock<OpPool>>,
     // metdata is too behind an Arc<RwLock<_>> as, like with op_pool, it is expected of a program to include a single, consolidated, metadata.
