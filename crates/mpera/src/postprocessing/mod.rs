@@ -18,9 +18,7 @@ pub(crate) fn apply_variant_map(
         .map(|(ix, arr)| {
             // TODO: Better FIX.
             let map = if base_n > 0 && arrays_n % base_n == 0 {
-                variant_map
-                    .get(ix)
-                    .or_else(|| variant_map.get(ix % base_n))
+                variant_map.get(ix).or_else(|| variant_map.get(ix % base_n))
             } else {
                 variant_map.get(ix)
             };

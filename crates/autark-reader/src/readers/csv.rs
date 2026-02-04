@@ -9,8 +9,8 @@ use std::{
     sync::Arc,
 };
 
-use arrow_csv::{ReaderBuilder, reader::Format};
 use arrow::datatypes::Schema;
+use arrow_csv::{ReaderBuilder, reader::Format};
 
 pub struct CsvReader {
     reader: arrow_csv::reader::BufReader<std::io::BufReader<std::io::BufReader<std::fs::File>>>,

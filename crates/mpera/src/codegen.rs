@@ -82,11 +82,7 @@ impl Codegen {
             ix,
             &format!(
                 "{}(x{}, x{}, key_left=x{}, key_right=x{})",
-                fn_name,
-                left.0,
-                right.0,
-                left_on.0,
-                right_on.0
+                fn_name, left.0, right.0, left_on.0, right_on.0
             ),
         )
     }
