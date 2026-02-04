@@ -75,19 +75,58 @@ def _mpera_groupby_std(t: Tensor, key: Tensor) -> Tensor:
     return key_unique.cat(out, dim=0)
 
 def _mpera_join_inner(left: Tensor, right: Tensor, key_left: Tensor, key_right: Tensor) -> Tensor:
-    k_left = key_left.reshape(-1)k_right = key_right.reshape(-1);
-    n_left = k_left.shape[0];n_right = k_right.shape[0];
+    k_left = key_left.reshape(-1)
+    k_right = key_right.reshape(-1)
+    n_left = k_left.shape[0]
+    n_right = k_right.shape[0]
 
     eq = k_left.reshape(n_left, 1) == k_right.reshape(1, n_right)
     idxs = eq.nonzero()
 
-    left_idx = idxs[:, 0];
+    left_idx = idxs[:, 0]
     right_idx = idxs[:, 1]
 
     left_gather = left_idx.reshape(1, -1).expand(left.shape[0], -1)
     right_gather = right_idx.reshape(1, -1).expand(right.shape[0], -1)
 
-    left_out = left.gather(1, left_gather);
+    left_out = left.gather(1, left_gather)
     right_out = right.gather(1, right_gather)
 
+    return left_out.cat(right_out, dim=0)
+
+def _mpera_join_left_outer(left: Tensor, right: Tensor, key_left: Tensor, key_right: Tensor) -> Tensor:
+    k_left = key_left.reshape(-1)
+    k_right = key_right.reshape(-1)
+    n_left = k_left.shape[0]
+    n_right = k_right.shape[0]
+
+    eq = k_left.reshape(n_left, 1) == k_right.reshape(1, n_right)
+    idxs = eq.nonzero()
+
+    left_idx = idxs[:, 0]
+    right_idx = idxs[:, 1]
+
+    ones = Tensor.ones((1, left_idx.shape[0]), dtype=left.dtype)
+    counts = Tensor.zeros((1, n_left), dtype=left.dtype).scatter_reduce(
+        1, left_idx.reshape(1, -1), ones, reduce="sum", include_self=False
+    )
+    missing = (counts.reshape(-1) == 0)
+    missing_idx = missing.nonzero().reshape(-1)
+
+    out_left_idx = left_idx.cat(missing_idx, dim=0)
+    out_right_idx = right_idx.cat(
+        Tensor.full((missing_idx.shape[0],), -1, dtype=right_idx.dtype), dim=0
+    )
+
+    nan_row = Tensor.full((right.shape[0], 1), float("nan"), dtype=right.dtype, device=right.device)
+    right_padded = right.cat(nan_row, dim=1)
+
+    mask = (out_right_idx < 0).cast(dtypes.int32)
+    out_right_idx = out_right_idx + mask * (n_right + 1)
+
+    left_gather = out_left_idx.reshape(1, -1).expand(left.shape[0], -1)
+    right_gather = out_right_idx.reshape(1, -1).expand(right.shape[0], -1)
+
+    left_out = left.gather(1, left_gather)
+    right_out = right_padded.gather(1, right_gather)
     return left_out.cat(right_out, dim=0)

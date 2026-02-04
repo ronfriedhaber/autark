@@ -10,11 +10,21 @@ pub(crate) fn apply_variant_map(
     arrays: Vec<Arc<dyn Array>>,
     variant_map: &[Vec<String>],
 ) -> Result<Vec<Arc<dyn Array>>> {
+    let base_n = variant_map.len();
+    let arrays_n = arrays.len();
     arrays
         .into_iter()
         .enumerate()
         .map(|(ix, arr)| {
-            let map = match variant_map.get(ix) {
+            // TODO: Better FIX.
+            let map = if base_n > 0 && arrays_n % base_n == 0 {
+                variant_map
+                    .get(ix)
+                    .or_else(|| variant_map.get(ix % base_n))
+            } else {
+                variant_map.get(ix)
+            };
+            let map = match map {
                 Some(map) if !map.is_empty() => map,
                 _ => return Ok(arr),
             };

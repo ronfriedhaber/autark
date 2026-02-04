@@ -71,7 +71,7 @@ fn t1() -> Result<()> {
     let mut join_fields = Vec::with_capacity(base_schema.fields().len() * 2);
     join_fields.extend(base_schema.fields().iter().cloned());
     join_fields.extend(base_schema.fields().iter().cloned());
-    left.join(right, left_key, right_key, JoinKind::Inner)?
+    left.join(right, left_key, right_key, JoinKind::LeftOuter)?
         .alias("joined", Some(Schema::new(join_fields)))?;
 
     // frame.p.dataframe(None)?.slice(0, 10)?.alias(
