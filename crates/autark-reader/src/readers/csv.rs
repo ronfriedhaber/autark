@@ -1,6 +1,6 @@
+use crate::Result;
 use crate::readers::OnceReader;
 use autark_dataframe::DataFrame;
-use crate::Result;
 use std::path::PathBuf;
 
 use std::{

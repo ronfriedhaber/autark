@@ -102,11 +102,11 @@ impl Runtime {
             .iter()
             .map(|(k, out)| {
                 let fields = match self.artifact.metadata.schema_map.get(k) {
-                    Some(schema) if schema.fields().len() == out.len() => Fields::from_iter(
-                        out.iter().enumerate().map(|(ix, x)| {
+                    Some(schema) if schema.fields().len() == out.len() => {
+                        Fields::from_iter(out.iter().enumerate().map(|(ix, x)| {
                             Field::new(schema.fields()[ix].name(), x.data_type().clone(), true)
-                        }),
-                    ),
+                        }))
+                    }
                     _ => Fields::from_iter(out.iter().enumerate().map(|(ix, x)| {
                         Field::new(format!("column{ix}"), x.data_type().clone(), true)
                     })),

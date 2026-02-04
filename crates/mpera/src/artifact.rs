@@ -1,8 +1,5 @@
 use crate::{
-    Result,
-    error::Error,
-    programmetadata::ProgramMetadata,
-    pyfn::PyFn,
+    Result, error::Error, programmetadata::ProgramMetadata, pyfn::PyFn,
     with_tinygrad::with_tinygrad,
 };
 
