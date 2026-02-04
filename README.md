@@ -1,6 +1,10 @@
 # The Autark Engine Monorepo
 
-* Post-Modern Analytical Processing Engine. *
+Post-Modern Analytical Processing Engine.
+
+Autark is an idiosyncratic approach of my own to the problem of dataframes in particular and analytical processing writ large.
+It attempts to defy orthodox practices in query engines and intermediate storage.
+The contemporary computational engine is a quasi-compiler which compiles to Tinygrad UOps.
 
 ## Post-Modern?
 Quasi-Irony
