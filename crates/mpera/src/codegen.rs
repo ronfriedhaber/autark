@@ -76,6 +76,7 @@ impl Codegen {
     ) -> String {
         let fn_name = match kind {
             JoinKind::Inner => "_mpera_join_inner",
+            JoinKind::LeftOuter => "_mpera_join_left_outer",
         };
         codegen_var_stmt_vanilla(
             ix,
