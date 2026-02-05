@@ -167,7 +167,8 @@ impl Tensor {
                 _ => {
                     return Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(format!(
                         "unsupported memoryview: format={fmt:?}, itemsize={item}"
-                    )));
+                    ))
+                    .into());
                 }
             })
         })

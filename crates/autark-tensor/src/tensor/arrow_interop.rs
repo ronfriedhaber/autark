@@ -6,8 +6,8 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 
-use with_tinygrad::with_tinygrad;
 use crate::{Error, Result};
+use with_tinygrad::with_tinygrad;
 
 impl super::Tensor {
     pub fn try_from_arrow_1d(arr: &ArrayRef, name: &str) -> Result<Self> {
@@ -15,7 +15,8 @@ impl super::Tensor {
             if arr.null_count() != 0 {
                 return Err(PyErr::new::<PyValueError, _>(
                     "Arrow array has nulls; tinygrad Tensor has no nulls",
-                ));
+                )
+                .into());
             }
 
             let tensor_cls = py.import("tinygrad")?.getattr("Tensor")?;
