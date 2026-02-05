@@ -15,6 +15,7 @@ impl ArrowReader {
 
 impl OnceReader for ArrowReader {
     fn read(&mut self) -> crate::Result<autark_dataframe::DataFrame> {
+        // TODO: remove clone.
         Ok(DataFrame::try_from(self.rb.clone())?)
     }
 

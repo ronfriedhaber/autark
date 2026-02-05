@@ -9,4 +9,6 @@ autark-reader = { path = "../autark-reader" }
 autark-sinks = { path = "../autark-sinks" }
 mpera = { path = "../mpera" }
 arrow = { version = "=56.2.0", features = [ "prettyprint" ] }
+
+[dev-dependencies]
 arrow-schema = { version = "=56.2.0", features = [ ] }
