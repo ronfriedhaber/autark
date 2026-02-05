@@ -1,19 +1,10 @@
 use autark_client::{OnceFrame, Result};
-use autark_sinks::sink::{csv::CsvSink, stdout::SinkStdout, void::SinkVoid};
-use std::{
-    hash::{DefaultHasher, Hash, Hasher},
-    path::PathBuf,
-    str::FromStr,
-    sync::Arc,
-};
+use autark_sinks::sink::void::SinkVoid;
+use std::hash::{DefaultHasher, Hash, Hasher};
 
-use arrow::{
-    array::record_batch,
-    datatypes::{DataType, Field, Schema},
-};
-use autark_reader::readers::{arrow::ArrowReader, csv::CsvReader};
-use mpera::op::{JoinKind, ReduceOpKind};
-use std::process::Command;
+use arrow::array::record_batch;
+use autark_reader::readers::arrow::ArrowReader;
+use mpera::op::ReduceOpKind;
 
 fn hash_of_t<T: Hash>(x: &T) -> Option<u64> {
     let mut hasher = DefaultHasher::new();
