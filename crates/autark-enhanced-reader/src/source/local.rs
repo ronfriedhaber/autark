@@ -7,25 +7,17 @@ use std::path::PathBuf;
 pub struct LocalSource;
 
 impl Source for LocalSource {
-    fn supports(uri: &str) -> bool {
-        uri.starts_with("file://") || !uri.contains("://")
-    }
-
-    fn read(uri: &str) -> Result<Box<dyn BufRead + Send>> {
-        let path = local_path_from_uri(uri)?;
+    fn read(content: &str) -> Result<Box<dyn BufRead + Send>> {
+        let path = local_path_from_content(content)?;
         let file = File::open(path)?;
         Ok(Box::new(BufReader::new(file)))
     }
 }
 
-fn local_path_from_uri(uri: &str) -> Result<PathBuf> {
-    if uri.starts_with("file://") {
-        let path = uri.trim_start_matches("file://");
-        if path.is_empty() {
-            return Err(Error::InvalidUri(uri.to_string()));
-        }
-        return Ok(PathBuf::from(path));
+fn local_path_from_content(content: &str) -> Result<PathBuf> {
+    if content.is_empty() {
+        return Err(Error::InvalidUri(content.to_string()));
     }
 
-    Ok(PathBuf::from(uri))
+    Ok(PathBuf::from(content))
 }
