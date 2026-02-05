@@ -1,4 +1,4 @@
-use crate::op::{BinaryOpKind, JoinKind, OpRef, ReduceOpKind};
+use crate::op::{BinaryOpKind, JoinKind, OpRef, ReduceKind};
 
 #[derive(Debug, Clone)]
 pub enum Op {
@@ -9,7 +9,7 @@ pub enum Op {
     },
 
     Reduce {
-        kind: ReduceOpKind,
+        kind: ReduceKind,
         on: OpRef,
     },
 
@@ -54,7 +54,7 @@ pub enum Op {
     GroupBy {
         keys: OpRef,
         values: OpRef,
-        kind: ReduceOpKind,
+        kind: ReduceKind,
     },
 
     Join {

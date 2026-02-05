@@ -1,7 +1,7 @@
 use crate::{
     Result,
     error::Error,
-    op::{BinaryOpKind, JoinKind, OpRef, ReduceOpKind},
+    op::{BinaryOpKind, JoinKind, OpRef, ReduceKind},
     program::Program,
 };
 
@@ -45,7 +45,7 @@ impl Codegen {
         )
     }
 
-    fn reduce(ix: usize, kind: &ReduceOpKind, on: &OpRef) -> String {
+    fn reduce(ix: usize, kind: &ReduceKind, on: &OpRef) -> String {
         codegen_var_stmt_vanilla(ix, &format!("x{}.{}(axis=-1)", on.0, kind.as_str()))
     }
 
@@ -54,7 +54,7 @@ impl Codegen {
         // format!("", on.0, n)
     }
 
-    fn groupby(ix: usize, keys: &OpRef, values: &OpRef, helper: &ReduceOpKind) -> String {
+    fn groupby(ix: usize, keys: &OpRef, values: &OpRef, helper: &ReduceKind) -> String {
         codegen_var_stmt_vanilla(
             ix,
             &format!(

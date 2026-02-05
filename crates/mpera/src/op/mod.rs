@@ -25,7 +25,7 @@ pub enum BinaryOpKind {
 }
 
 #[derive(Debug, Clone)]
-pub enum ReduceOpKind {
+pub enum ReduceKind {
     Sum,
     Product,
     Mean,
@@ -33,14 +33,14 @@ pub enum ReduceOpKind {
     Stdev,
 }
 
-impl ReduceOpKind {
+impl ReduceKind {
     pub fn as_str(&self) -> &'static str {
         match self {
-            ReduceOpKind::Sum => "sum",
-            ReduceOpKind::Product => "product",
-            ReduceOpKind::Mean => "mean",
-            ReduceOpKind::Count => "len",
-            ReduceOpKind::Stdev => "std",
+            ReduceKind::Sum => "sum",
+            ReduceKind::Product => "product",
+            ReduceKind::Mean => "mean",
+            ReduceKind::Count => "len",
+            ReduceKind::Stdev => "std",
         }
     }
 }

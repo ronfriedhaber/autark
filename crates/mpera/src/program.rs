@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use crate::{
     Result,
     error::Error,
-    op::{BinaryOpKind, JoinKind, Op, OpPool, OpRef, ReduceOpKind},
+    op::{BinaryOpKind, JoinKind, Op, OpPool, OpRef, ReduceKind},
     programmetadata::ProgramMetadata,
 };
 use arrow::datatypes::Schema;
@@ -130,14 +130,14 @@ impl Program {
         self.with_generic(Op::ConstantF64 { value })
     }
 
-    pub fn reduce(&self, kind: ReduceOpKind) -> Result<Program> {
+    pub fn reduce(&self, kind: ReduceKind) -> Result<Program> {
         self.with_generic(Op::Reduce {
             kind,
             on: self.root()?,
         })
     }
 
-    pub fn group_by(&self, keys: Program, kind: ReduceOpKind) -> Result<Program> {
+    pub fn group_by(&self, keys: Program, kind: ReduceKind) -> Result<Program> {
         self.with_generic(Op::GroupBy {
             keys: keys.root()?,
             values: self.root()?,
