@@ -1,8 +1,10 @@
+pub mod arrow;
 pub mod csv;
 pub mod json;
 
 use crate::Result;
-use arrow::datatypes::Schema;
+use ::arrow::datatypes::Schema;
+// use arrow::datatypes::Schema;
 use autark_dataframe::DataFrame;
 use std::sync::Arc;
 

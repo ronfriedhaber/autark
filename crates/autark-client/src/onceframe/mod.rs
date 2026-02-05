@@ -1,5 +1,5 @@
 use mpera::{
-    output::fuse, pipeline::Pipeline, program::Program, programpayload::ProgramPayload,
+    output::ProgramOutput, pipeline::Pipeline, program::Program, programpayload::ProgramPayload,
     runtime::Runtime,
 };
 
@@ -11,7 +11,14 @@ use autark_sinks::Sink;
 pub struct OnceFrame<S: Sink> {
     readers: Vec<Box<dyn OnceReader>>,
     sink: S,
+    // realized: Option<ProgramOutput>, // Perchance can be generic.
     pub p: Program,
+}
+
+// TODO: Sep file
+#[derive(Debug, Hash)]
+pub struct RealizedOnceFrame {
+    program_output: ProgramOutput,
 }
 
 impl<S: Sink> OnceFrame<S> {
@@ -48,7 +55,7 @@ impl<S: Sink> OnceFrame<S> {
 
     // shall take S: Sink
     // thinking: what happens if needers more than one frame, perchance acept sequence of reader
-    pub fn realize(self) -> Result<()> {
+    pub fn realize(self) -> Result<RealizedOnceFrame> {
         let pipeline = Pipeline::new(self.p);
         let artifact = pipeline.run()?;
         let runtime = Runtime::new(artifact);
@@ -60,12 +67,15 @@ impl<S: Sink> OnceFrame<S> {
             .collect::<Result<Vec<_>>>()?;
 
         let output = runtime.run(ProgramPayload::new(dataframes)?)?;
-        let outputs = vec![output];
+        // let outputs = vec![output];
 
-        self.sink
-            .sink(fuse(&outputs))
-            .map_err(|err| Error::Sink(err.to_string()))?;
+        // later
+        // self.sink
+        //     .sink(fuse(&outputs))
+        //     .map_err(|err| Error::Sink(err.to_string()))?;
 
-        Ok(())
+        Ok(RealizedOnceFrame {
+            program_output: output,
+        })
     }
 }
