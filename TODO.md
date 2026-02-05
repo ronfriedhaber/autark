@@ -1,1 +1,0 @@
-Thank you for considering to contribute to the Open Source part of Autark. An up-to-date TODO registry, presently solely managed by me, can be found by searching for Github Issues with the `TODO` label. [Link](https://github.com/ronfriedhaber/autark/issues?q=is%3Aissue%20state%3Aopen%20label%3ATODO)
