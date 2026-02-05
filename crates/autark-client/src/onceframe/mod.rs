@@ -1,5 +1,5 @@
 use mpera::{
-    output::{ProgramOutput, fuse},
+    output::ProgramOutput,
     pipeline::Pipeline,
     program::Program,
     programpayload::ProgramPayload,
