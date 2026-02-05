@@ -1,5 +1,5 @@
 use autark_client::{OnceFrame, Result};
-use autark_sinks::sink::void::SinkVoid;
+use autark_sinks::sink::{stdout::SinkStdout, void::SinkVoid};
 use std::hash::{DefaultHasher, Hash, Hasher};
 
 use arrow::array::record_batch;
@@ -21,11 +21,19 @@ fn t1() -> Result<()> {
             "b",
             Float32,
             [0.1, 0.2, 0.4, 0.8, 1.6, 3.2, 6.4, 12.8, 25.6, 51.2, 102.4]
+        ),
+        (
+            "c",
+            Utf8,
+            [
+                "BOB", "ALICE", "BOB", "BOB", "ALICE", "ALICE", "ALICE", "BOB", "ALICE", "BOB",
+                "ALICE"
+            ]
         )
     )?;
     let reader = ArrowReader::new(input);
 
-    let frame = OnceFrame::new(reader, SinkVoid {});
+    let frame = OnceFrame::new(reader, SinkStdout {});
 
     frame
         .p
@@ -48,6 +56,16 @@ fn t1() -> Result<()> {
         .rolling(4)?
         .reduce(ReduceOpKind::Mean)?
         .alias("rolling_mean", None)?;
+
+    frame
+        .p
+        .dataframe(None)?
+        .col("c")?
+        .group_by(frame.p.dataframe(None)?.col("c")?, ReduceOpKind::Count)?
+        .alias(
+            "group_by_name",
+            Some(frame.schema_of_columns(None, &["c", "a"])?),
+        )?;
 
     let realized = frame.realize()?;
     dbg!(hash_of_t(&realized));

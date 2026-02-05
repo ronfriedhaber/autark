@@ -1,5 +1,8 @@
 use mpera::{
-    output::ProgramOutput, pipeline::Pipeline, program::Program, programpayload::ProgramPayload,
+    output::{ProgramOutput, fuse},
+    pipeline::Pipeline,
+    program::Program,
+    programpayload::ProgramPayload,
     runtime::Runtime,
 };
 
@@ -67,12 +70,13 @@ impl<S: Sink> OnceFrame<S> {
             .collect::<Result<Vec<_>>>()?;
 
         let output = runtime.run(ProgramPayload::new(dataframes)?)?;
-        // let outputs = vec![output];
+        let outputs = vec![output.clone()];
 
         // later
-        // self.sink
-        //     .sink(fuse(&outputs))
-        //     .map_err(|err| Error::Sink(err.to_string()))?;
+        self.sink
+            // Transforming to single-item vec just to fuse isn't great
+            .sink(fuse(&outputs))
+            .map_err(|err| Error::Sink(err.to_string()))?;
 
         Ok(RealizedOnceFrame {
             program_output: output,
