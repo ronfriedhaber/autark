@@ -3,7 +3,7 @@ use std::sync::Arc;
 use pyo3::prelude::*;
 
 use crate::tensor::Tensor;
-use crate::with_tinygrad::with_tinygrad;
+use with_tinygrad::with_tinygrad;
 
 macro_rules! impl_pytensor_binaryop_tensor {
     ($trait_name:ident, $fn_name:ident, $py_fn_name:literal, $rhs:ty) => {

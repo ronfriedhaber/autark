@@ -16,7 +16,6 @@ pub mod string;
 
 mod flag;
 mod pyfn;
-mod with_tinygrad;
 
 pub use crate::artifact::Artifact;
 // pub use autark::Tensor;

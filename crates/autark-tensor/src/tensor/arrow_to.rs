@@ -9,7 +9,7 @@ use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 
 use crate::Result;
-use crate::with_tinygrad::with_tinygrad;
+use with_tinygrad::with_tinygrad;
 
 use arrow::array::{ArrayData, BooleanArray, Float32Array, Int32Array, Int64Array, UInt8Array};
 use arrow::buffer::Buffer;

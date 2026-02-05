@@ -13,5 +13,6 @@ arrow = "=56.2.0"
 autark-tensor = { path = "../autark-tensor" }
 autark-dataframe = { path = "../autark-dataframe" }
 autark-error = { path = "../autark-error" }
+with-tinygrad = { path = "../with-tinygrad" }
 
 log = "=0.4.28"

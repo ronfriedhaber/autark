@@ -2,20 +2,19 @@ use pyo3::prelude::*;
 use pyo3::types::PyList;
 use std::env;
 
-use crate::Result;
-use crate::error::Error;
+use autark_error::Error;
 
 const DEFAULT_TINYGRAD_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../tinygrad");
 
-pub(crate) fn with_tinygrad<F, R>(f: F) -> std::result::Result<R, Error>
+pub fn with_tinygrad<F, R>(f: F) -> Result<R, Error>
 where
-    F: FnOnce(Python<'_>) -> Result<R>,
+    F: FnOnce(Python<'_>) -> Result<R, Error>,
 {
     Python::attach(|py| {
         ensure_tinygrad_on_path(py)?;
         f(py)
     })
-    .map_err(|e| e.into())
+    .map_err(Into::into)
 }
 
 fn ensure_tinygrad_on_path(py: Python<'_>) -> PyResult<()> {

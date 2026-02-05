@@ -1,7 +1,5 @@
-use crate::{
-    Result, error::Error, programmetadata::ProgramMetadata, pyfn::PyFn,
-    with_tinygrad::with_tinygrad,
-};
+use crate::{Result, error::Error, programmetadata::ProgramMetadata, pyfn::PyFn};
+use with_tinygrad::with_tinygrad;
 
 #[derive(Debug)]
 pub struct Artifact {

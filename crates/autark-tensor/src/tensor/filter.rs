@@ -1,6 +1,7 @@
 use pyo3::types::PyAnyMethods;
 
-use crate::{Result, tensor::Tensor, with_tinygrad::with_tinygrad};
+use crate::{Result, tensor::Tensor};
+use with_tinygrad::with_tinygrad;
 
 impl Tensor {
     pub fn filter(&self, mask: &Tensor) -> Result<Tensor> {

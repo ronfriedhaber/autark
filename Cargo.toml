@@ -6,7 +6,8 @@ members = [
   "crates/autark-sinks",
   "crates/autark-client",
   "crates/autark-tensor",
-  "crates/autark-error"
+  "crates/autark-error",
+  "crates/with-tinygrad"
 ]
 
 resolver = "3"
