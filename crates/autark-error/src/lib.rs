@@ -1,4 +1,5 @@
 use std::ffi::NulError;
+use std::io;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -18,6 +19,18 @@ pub enum Error {
 
     #[error("Reader is void.")]
     EmptyReader,
+
+    #[error("Reader error: {0}")]
+    Reader(String),
+
+    #[error("I/O error.")]
+    Io(#[from] io::Error),
+
+    #[error("Invalid URI: {0}")]
+    InvalidUri(String),
+
+    #[error("Unsupported URI: {0}")]
+    UnsupportedUri(String),
 
     #[error("Nul Error.")]
     NulError(#[from] NulError),

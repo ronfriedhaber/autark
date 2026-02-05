@@ -4,7 +4,7 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 
 use arrow::array::record_batch;
 use autark_reader::readers::arrow::ArrowReader;
-use mpera::op::ReduceOpKind;
+use mpera::op::ReduceKind;
 
 fn hash_of_t<T: Hash>(x: &T) -> Option<u64> {
     let mut hasher = DefaultHasher::new();
@@ -39,14 +39,14 @@ fn t1() -> Result<()> {
         .p
         .dataframe(None)?
         .col("a")?
-        .reduce(ReduceOpKind::Sum)?
+        .reduce(ReduceKind::Sum)?
         .alias("a_sum", None)?; // Shall automatically detect result is 0-d scalar and not return a frame.
 
     frame
         .p
         .dataframe(None)?
         .col("b")?
-        .reduce(ReduceOpKind::Sum)?
+        .reduce(ReduceKind::Sum)?
         .alias("b_sum", None)?; // Shall automatically detect result is 0-d scalar and not return a frame.
 
     frame
@@ -54,14 +54,14 @@ fn t1() -> Result<()> {
         .dataframe(None)?
         .col("a")?
         .rolling(4)?
-        .reduce(ReduceOpKind::Mean)?
+        .reduce(ReduceKind::Mean)?
         .alias("rolling_mean", None)?;
 
     frame
         .p
         .dataframe(None)?
         .col("c")?
-        .group_by(frame.p.dataframe(None)?.col("c")?, ReduceOpKind::Count)?
+        .group_by(frame.p.dataframe(None)?.col("c")?, ReduceKind::Count)?
         .alias(
             "group_by_name",
             Some(frame.schema_of_columns(None, &["c", "a"])?),

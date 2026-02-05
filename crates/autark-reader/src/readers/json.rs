@@ -1,22 +1,23 @@
 use crate::Result;
 use crate::readers::OnceReader;
 use autark_dataframe::DataFrame;
+use autark_enhanced_reader::autoread_to_bytes;
+use std::io::{BufReader, Cursor};
 use std::path::PathBuf;
-
-use std::{fs::File, io::BufReader, sync::Arc};
+use std::sync::Arc;
 
 use arrow::datatypes::Schema;
 use arrow_json::{ReaderBuilder, reader::infer_json_schema_from_seekable};
 
 pub struct JsonReader {
-    reader: arrow_json::Reader<std::io::BufReader<std::fs::File>>,
+    reader: arrow_json::Reader<std::io::BufReader<Cursor<Vec<u8>>>>,
     schema: Arc<Schema>,
 }
 
 impl JsonReader {
-    pub fn new(path: PathBuf) -> Result<JsonReader> {
-        let file = File::open(path).unwrap();
-        let mut reader = BufReader::new(file);
+    pub fn new(uri: &str) -> Result<JsonReader> {
+        let bytes = autoread_to_bytes(uri)?;
+        let mut reader = BufReader::new(Cursor::new(bytes));
 
         let (schema, _inferred_rows) =
             infer_json_schema_from_seekable(&mut reader, Some(1e6 as usize)).unwrap();

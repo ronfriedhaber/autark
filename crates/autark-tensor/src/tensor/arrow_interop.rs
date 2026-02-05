@@ -65,6 +65,15 @@ impl super::Tensor {
                 let values: Vec<bool> = (0..a.len()).map(|i| a.value(i)).collect();
                 Ok(PyList::new(py, values)?.unbind())
             }
+            DataType::Date32 => {
+                let a = arr.as_primitive::<Date32Type>();
+                let values: Vec<i64> = a
+                    .values()
+                    .iter()
+                    .map(|days| (*days as i64) * 86_400 * 1_000_000_000)
+                    .collect();
+                Ok(PyList::new(py, values)?.unbind())
+            }
             _ => Err(Error::UnsupportedArrowDataType),
         }
     }

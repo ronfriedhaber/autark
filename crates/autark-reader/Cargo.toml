@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 autark-dataframe = { path = "../autark-dataframe" }
 autark-error = { path = "../autark-error" }
+autark-enhanced-reader = { path = "../autark-enhanced-reader" }
 arrow = "=56.2.0"
 arrow-csv = "=56.2.0"
 arrow-json = "=56.2.0"
