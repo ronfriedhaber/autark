@@ -4,7 +4,8 @@ use std::sync::Arc;
 use arrow::array::{ArrayRef, BooleanArray, Float32Array, Int32Array, Int64Array, UInt8Array};
 use pyo3::buffer::PyBuffer;
 
-use crate::{Result, tensor::Tensor, with_tinygrad::with_tinygrad};
+use crate::{Result, tensor::Tensor};
+use with_tinygrad::with_tinygrad;
 
 impl Tensor {
     pub fn new(obj: Py<PyAny>) -> Tensor {
@@ -166,7 +167,8 @@ impl Tensor {
                 _ => {
                     return Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(format!(
                         "unsupported memoryview: format={fmt:?}, itemsize={item}"
-                    )));
+                    ))
+                    .into());
                 }
             })
         })

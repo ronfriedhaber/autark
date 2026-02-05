@@ -1,6 +1,5 @@
 pub mod error;
 pub mod tensor;
-pub(crate) mod with_tinygrad;
 
 pub use tensor::*;
 

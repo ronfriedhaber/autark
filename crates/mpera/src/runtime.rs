@@ -8,8 +8,9 @@ use pyo3::prelude::*;
 
 use crate::{
     Result, artifact::Artifact, output::ProgramOutput, postprocessing::apply_variant_map,
-    programpayload::ProgramPayload, with_tinygrad::with_tinygrad,
+    programpayload::ProgramPayload,
 };
+use with_tinygrad::with_tinygrad;
 use autark_dataframe::DataFramePayload;
 use autark_tensor::Tensor;
 

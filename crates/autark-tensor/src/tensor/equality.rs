@@ -1,5 +1,5 @@
 use crate::tensor::PyTensor;
-use crate::with_tinygrad::with_tinygrad;
+use with_tinygrad::with_tinygrad;
 use std::sync::Arc;
 
 use pyo3::prelude::*;

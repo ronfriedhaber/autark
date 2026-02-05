@@ -1,0 +1,8 @@
+[package]
+name = "with-tinygrad"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+pyo3 = { version = "=0.26", features = ["auto-initialize"] }
+autark-error = { path = "../autark-error" }
