@@ -1,22 +1,45 @@
-name: Overview
+name: Rust CI
 
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - "**/*.rs"
+      - "**/Cargo.toml"
+      - "Cargo.lock"
+      - "tinygrad/**"
+      - ".github/workflows/rust.yml"
   pull_request:
     branches: [ "main" ]
+    paths:
+      - "**/*.rs"
+      - "**/Cargo.toml"
+      - "Cargo.lock"
+      - "tinygrad/**"
+      - ".github/workflows/rust.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -24,40 +47,57 @@ jobs:
           python-version: "3.11"
 
       - name: Install uv
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        uses: astral-sh/setup-uv@v5
 
       - name: Install tinygrad (editable)
         run: |
           uv venv
-          cd tinygrad
-          ls
-          uv pip install -e .
-          cd ..
-
-      - name: Build
-        run: cargo build --verbose
-
+          uv pip install --python .venv/bin/python -e tinygrad
 
       - name: Check
-        run: cargo check --verbose
+        run: cargo check --workspace --all-targets --locked
 
-      - name: Cache
-        uses: actions/cache@v4
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: check
+
+    steps:
+      - uses: actions/checkout@v4
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          submodules: recursive
 
-  
-      - name: Count LOC
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install tinygrad (editable)
         run: |
-          sudo apt install -y cloc
-          cloc crates/
+          uv venv
+          uv pip install --python .venv/bin/python -e tinygrad
 
-      # - name: Run tests
-      #   run: cargo test --verbose
+      - name: Build
+        run: cargo build --workspace --all-targets --locked
 
+  count-loc:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 10
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cloc
+        run: sudo apt-get update && sudo apt-get install -y cloc
+      - name: Count LOC
+        run: cloc crates/
