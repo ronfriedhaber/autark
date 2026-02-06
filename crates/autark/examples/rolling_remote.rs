@@ -1,9 +1,7 @@
 // use autark_client::{OnceFrame, Result};
-use autark_client::prelude::*;
+use autark::prelude::*;
 use autark_reader::readers::csv::CsvReader;
 use autark_sinks::sink::stdout::SinkStdout;
-use mpera::op::ReduceKind;
-use std::hash::{DefaultHasher, Hash, Hasher};
 
 const REMOTE_CSV: &str = "https://raw.githubusercontent.com/Snowflake-Labs/demo-datasets/refs/heads/main/avalanche/csv/order-history.csv";
 
