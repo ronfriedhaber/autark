@@ -1,8 +1,8 @@
 use std::ffi::CString;
 use std::str::FromStr;
 
-use pyo3::types::{PyModule, PyTuple};
 use pyo3::prelude::*;
+use pyo3::types::{PyModule, PyTuple};
 
 use crate::Result;
 
@@ -38,6 +38,4 @@ impl PyFn {
         let run = self.run.bind(py);
         run.call1(args)
     }
-
- 
 }

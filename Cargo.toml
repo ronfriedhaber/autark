@@ -3,6 +3,7 @@ members = [
   "crates/mpera",
   "crates/autark-dataframe",
   "crates/autark-reader",
+  "crates/autark-enhanced-reader",
   "crates/autark-sinks",
   "crates/autark-client",
   "crates/autark-tensor",

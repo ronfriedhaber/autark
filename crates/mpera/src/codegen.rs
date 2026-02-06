@@ -46,7 +46,12 @@ impl Codegen {
     }
 
     fn reduce(ix: usize, kind: &ReduceKind, on: &OpRef) -> String {
-        codegen_var_stmt_vanilla(ix, &format!("x{}.{}(axis=-1)", on.0, kind.as_str()))
+        match kind {
+            ReduceKind::Count => {
+                codegen_var_stmt_vanilla(ix, &format!("Tensor([x{}.shape[1]])", on.0))
+            }
+            _ => codegen_var_stmt_vanilla(ix, &format!("x{}.{}(axis=-1)", on.0, kind.as_str())),
+        }
     }
 
     fn rolling(ix: usize, on: &OpRef, n: usize) -> String {
