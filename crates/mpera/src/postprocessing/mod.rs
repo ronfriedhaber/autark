@@ -27,7 +27,16 @@ pub(crate) fn apply_variant_map(
                 _ => return Ok(arr),
             };
 
-            let indices = indices_from_array(arr.as_ref())?;
+            let indices = match indices_from_array(arr.as_ref()) {
+                Ok(indices) => indices,
+                Err(_) => return Ok(arr),
+            };
+            if indices
+                .iter()
+                .any(|&idx| idx < 0 || (idx as usize) >= map.len())
+            {
+                return Ok(arr);
+            }
             let values = indices
                 .into_iter()
                 .map(|idx| map_index(map, idx))
