@@ -1,6 +1,7 @@
-use autark_client::{OnceFrame, Result};
-use autark_sinks::sink::{stdout::SinkStdout, void::SinkVoid};
 use std::hash::{DefaultHasher, Hash, Hasher};
+// use autark_client::{OnceFrame, Result};
+use autark::prelude::*;
+use autark_sinks::sink::stdout::SinkStdout;
 
 use arrow::array::record_batch;
 use autark_reader::readers::arrow::ArrowReader;
@@ -14,7 +15,7 @@ fn hash_of_t<T: Hash>(x: &T) -> Option<u64> {
 }
 
 #[test]
-fn t1() -> Result<()> {
+fn t1() -> AutarkResult<()> {
     let input = record_batch!(
         ("a", Int32, [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]),
         (
