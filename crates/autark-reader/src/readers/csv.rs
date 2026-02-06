@@ -1,9 +1,8 @@
 use crate::Result;
 use crate::readers::OnceReader;
 use autark_dataframe::DataFrame;
-use autark_enhanced_reader::{autoread, autoread_to_bytes};
-use std::io::{BufReader, Cursor, Seek, SeekFrom};
-use std::path::PathBuf;
+use autark_enhanced_reader::autoread_to_bytes;
+use std::io::{Cursor, Seek, SeekFrom};
 use std::sync::Arc;
 
 use arrow::datatypes::Schema;

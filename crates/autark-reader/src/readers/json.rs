@@ -3,7 +3,6 @@ use crate::readers::OnceReader;
 use autark_dataframe::DataFrame;
 use autark_enhanced_reader::autoread_to_bytes;
 use std::io::{BufReader, Cursor};
-use std::path::PathBuf;
 use std::sync::Arc;
 
 use arrow::datatypes::Schema;

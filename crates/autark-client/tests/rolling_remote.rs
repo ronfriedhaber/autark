@@ -15,7 +15,7 @@ fn hash_of_t<T: Hash>(x: &T) -> Option<u64> {
 
 #[test]
 fn t_remote_csv() -> Result<()> {
-    let reader = CsvReader::new_uri(REMOTE_CSV)?;
+    let reader = CsvReader::new(REMOTE_CSV)?;
     let frame = OnceFrame::new(reader, SinkStdout {});
 
     let schema = frame.schema(None)?;
