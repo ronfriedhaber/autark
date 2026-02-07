@@ -13,7 +13,7 @@ use autark_sinks::Sink;
 
 pub struct OnceFrame<S: Sink> {
     readers: Vec<Box<dyn OnceReader>>,
-    sink: S,
+    sinks: Vec<S>,
     // realized: Option<ProgramOutput>, // Perchance can be generic.
     pub p: Program,
 }
@@ -28,7 +28,7 @@ impl<S: Sink> OnceFrame<S> {
     pub fn new<R: OnceReader + 'static>(reader: R, sink: S) -> OnceFrame<S> {
         OnceFrame {
             readers: vec![Box::new(reader)],
-            sink,
+            sinks: vec![sink],
             p: Program::new(),
         }
     }
@@ -56,6 +56,11 @@ impl<S: Sink> OnceFrame<S> {
         self
     }
 
+    pub fn with_sink(mut self, sink: S) -> OnceFrame<S> {
+        self.sinks.push(sink);
+        self
+    }
+
     // shall take S: Sink
     // thinking: what happens if needers more than one frame, perchance acept sequence of reader
     pub fn realize(self) -> Result<RealizedOnceFrame> {
@@ -70,13 +75,11 @@ impl<S: Sink> OnceFrame<S> {
             .collect::<Result<Vec<_>>>()?;
 
         let output = runtime.run(ProgramPayload::new(dataframes)?)?;
-        let outputs = vec![output.clone()];
-
-        // later
-        self.sink
-            // Transforming to single-item vec just to fuse isn't great
-            .sink(fuse(&outputs))
-            .map_err(|err| Error::Sink(err.to_string()))?;
+        let fused_output = fuse(&[output.clone()]);
+        self.sinks.iter().try_for_each(|sink| {
+            sink.sink(fused_output.clone())
+                .map_err(|err| Error::Sink(err.to_string()))
+        })?;
 
         Ok(RealizedOnceFrame {
             program_output: output,
