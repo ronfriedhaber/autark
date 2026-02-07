@@ -1,6 +1,5 @@
-from autarkpy import *
+from autarkpy import CsvReader, OnceFrame
 
-df = DataFrame(DataReader.Csv("../../fuzz/data/cpu_usage_a.csv"))
-
-df = df.with_column("avg", col("cpu_usage").rolling_mean(10))
-df.realize()
+frame = OnceFrame(CsvReader("../../fuzz/data/cpu_usage_a.csv"))
+frame.dataframe().col("cpu_usage").rolling(10).reduce("mean").alias("avg")
+print(frame.realize())
