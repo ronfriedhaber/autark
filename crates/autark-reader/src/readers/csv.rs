@@ -5,6 +5,7 @@ use autark_enhanced_reader::autoread_to_bytes;
 use std::io::{Cursor, Seek, SeekFrom};
 use std::sync::Arc;
 
+use arrow::compute::concat_batches;
 use arrow::datatypes::Schema;
 use arrow_csv::{ReaderBuilder, reader::Format};
 
@@ -39,13 +40,18 @@ impl CsvReader {
 
 impl OnceReader for CsvReader {
     fn read(&mut self) -> Result<DataFrame> {
-        match self.reader.next() {
-            Some(batch) => {
-                let df = DataFrame::try_from(batch?)?;
-                Ok(df)
-            }
-            None => Err(crate::Error::EmptyReader),
+        let batches: Vec<_> = self
+            .reader
+            .by_ref()
+            .map(|batch| batch.map_err(Into::into))
+            .collect::<Result<Vec<_>>>()?;
+
+        if batches.is_empty() {
+            return Err(crate::Error::EmptyReader);
         }
+
+        let batch = concat_batches(&self.schema, &batches)?;
+        Ok(DataFrame::try_from(batch)?)
     }
 
     fn schema(&self) -> Result<Arc<Schema>> {
