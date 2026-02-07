@@ -33,10 +33,11 @@ impl JsonReader {
 
 impl OnceReader for JsonReader {
     fn read(&mut self) -> Result<DataFrame> {
-        let mut batches = Vec::new();
-        for batch in self.reader.by_ref() {
-            batches.push(batch?);
-        }
+        let batches: Vec<_> = self
+            .reader
+            .by_ref()
+            .map(|batch| batch.map_err(Into::into))
+            .collect::<Result<Vec<_>>>()?;
 
         if batches.is_empty() {
             return Err(crate::Error::EmptyReader);
