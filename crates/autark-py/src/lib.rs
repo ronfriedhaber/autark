@@ -1,21 +1,20 @@
 use pyo3::prelude::*;
 
-use crate::{pylazyframe::PyLazyFrame, pylazyreader::PyLazyReader, pyvalue::PyValue};
+mod error;
+mod kinds;
+mod onceframe;
+mod program;
+mod reader;
 
-pub mod pylazyframe;
-pub mod pylazyreader;
-pub mod pyvalue;
-
-#[pyfunction(name = "col")]
-pub fn pycol(name: &str) -> PyResult<PyValue> {
-    Ok(PyValue::from_inner(autark::col(name)))
-}
+use onceframe::PyOnceFrame;
+use program::PyProgram;
+use reader::{PyCsvReader, PyJsonReader};
 
 #[pymodule(name = "autarkpy")]
 fn autarkpy(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_class::<PyLazyFrame>()?;
-    m.add_class::<PyLazyReader>()?;
-    m.add_function(wrap_pyfunction!(pycol, m)?)?;
-
+    m.add_class::<PyCsvReader>()?;
+    m.add_class::<PyJsonReader>()?;
+    m.add_class::<PyProgram>()?;
+    m.add_class::<PyOnceFrame>()?;
     Ok(())
 }

@@ -10,4 +10,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "=0.26", features = ["extension-module"] }
-autark = { path = "../autark-engine" }
+autark = { path = "../autark" }
+
+[workspace]
